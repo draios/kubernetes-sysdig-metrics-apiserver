@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+set -o errexit
+
+export DEBIAN_FRONTEND=noninteractive
+
+readonly ipaddr="$1"
+readonly host="$2"
+
+if ! grep vagrant /home/vagrant/.ssh/authorized_keys > /dev/null; then
+  exit
+fi
+
+echo "=> Disabling swap"
+swapoff -a
+sed -i '/ swap / s/^/#/' /etc/fstab
+
+echo "=> Setting noop scheduler"
+echo noop > /sys/block/sda/queue/scheduler
+
+echo "=> Disabling IPv6"
+echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
+echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.conf
+sysctl -p
+
+echo "=> Pass bridged IPv4 traffic to iptables' chains"
+modprobe br_netfilter
+echo "br_netfilter" >> /etc/modules
+echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.conf
+sysctl -p
+
+echo "=> Setting up Kubernetes repository"
+apt-get update && apt-get install -y apt-transport-https
+curl -Ls https://apt.kubernetes.io/doc/apt-key.gpg | apt-key add -
+echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list
+
+echo "=> Installing dependencies"
+apt-get update && apt-get install -y docker.io kubeadm kubelet kubectl ifupdown-extra
+
+echo "=> Configuring kubelet arguments"
+CGROUP_DRIVER=$(sudo docker info | grep "Cgroup Driver" | awk '{print $3}')
+sed -i "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--cgroup-driver=$CGROUP_DRIVER |g" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+systemctl daemon-reload
+systemctl stop kubelet && systemctl start kubelet
+
+# Ensure that `hostname -i` returns a routable IP address (i.e. one on the
+# second network interface, not the first one). By default, it doesn’t do
+# this and kubelet ends-up using first non-loopback network interface, which
+# is usually NATed. Workaround: override /etc/hosts.
+# See https://kubernetes.io/docs/setup/independent/troubleshooting-kubeadm/.
+echo "${ipaddr} ${host}" > /etc/hosts
+
+# This is a workaround for Vagrant setups where we have two network interfaces
+# and the Kubernetes components are not reachable on the default route. We add
+# a custom route so the Kubernetes cluster addresses go via the appropiate
+# adapter.
+# Related links:
+# - https://kubernetes.io/docs/setup/independent/install-kubeadm/#check-network-adapters
+# - https://github.com/kubernetes/kubeadm/issues/102
+echo "10.96.0.0 255.240.0.0 172.17.8.100 eth1" > /etc/network/routes
+ip route add 10.96.0.0/12 dev eth1
