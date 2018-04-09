@@ -4,10 +4,11 @@
 NETWORK = "172.17.8."
 NETMASK = "255.255.255.0"
 BOX = "bento/ubuntu-16.04"
-WORKERS = ENV.has_key?('WORKERS') ? ENV['WORKERS'].to_i : 1
+WORKERS = ENV.has_key?('WORKERS') ? ENV['WORKERS'].to_i : 2
+SYSDIG_ACCESS_KEY = ENV.has_key?('SYSDIG_ACCESS_KEY') ? ENV['SYSDIG_ACCESS_KEY'] : ""
 
 HOSTS = {
-  "controller-node" => [NETWORK+"100", 1000]
+  "controller-node" => [NETWORK+"100", 2000]
 }
 (1..WORKERS).each do |i|
   HOSTS["worker-node-#{i}"] = [NETWORK+"#{i+100}", 2000]
@@ -40,7 +41,7 @@ Vagrant.configure("2") do |config|
       end
       machine.vm.provision "shell",
         path: "mixins/bootstrap.sh",
-        args: [ipaddr, host]
+        args: [ipaddr, host, SYSDIG_ACCESS_KEY]
     end
   end
 

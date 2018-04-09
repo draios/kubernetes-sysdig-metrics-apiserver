@@ -7,6 +7,12 @@ export DEBIAN_FRONTEND=noninteractive
 
 readonly ipaddr="$1"
 readonly host="$2"
+readonly sysdig_access_key="$3"
+
+if [ -z "${sysdig_access_key}" ]; then
+  echo "Missing parameters"
+  exit 1
+fi
 
 if ! grep vagrant /home/vagrant/.ssh/authorized_keys > /dev/null; then
   exit
@@ -45,11 +51,15 @@ sed -i "s|KUBELET_KUBECONFIG_ARGS=|KUBELET_KUBECONFIG_ARGS=--cgroup-driver=$CGRO
 systemctl daemon-reload
 systemctl stop kubelet && systemctl start kubelet
 
+echo "=> Installing kernel headers (needed by Sysdig Agent)"
+apt-get -qq -y install linux-headers-$(uname -r)
+
 # Ensure that `hostname -i` returns a routable IP address (i.e. one on the
 # second network interface, not the first one). By default, it doesn’t do
 # this and kubelet ends-up using first non-loopback network interface, which
 # is usually NATed. Workaround: override /etc/hosts.
 # See https://kubernetes.io/docs/setup/independent/troubleshooting-kubeadm/.
+echo "=> Ensuring that 'hostname -i' returns a routable IP address"
 echo "${ipaddr} ${host}" > /etc/hosts
 
 # This is a workaround for Vagrant setups where we have two network interfaces
@@ -59,5 +69,6 @@ echo "${ipaddr} ${host}" > /etc/hosts
 # Related links:
 # - https://kubernetes.io/docs/setup/independent/install-kubeadm/#check-network-adapters
 # - https://github.com/kubernetes/kubeadm/issues/102
+echo "=> Ensuring that the Kubernetes cluster addresses are reachable"
 echo "10.96.0.0 255.240.0.0 172.17.8.100 eth1" > /etc/network/routes
 ip route add 10.96.0.0/12 dev eth1
