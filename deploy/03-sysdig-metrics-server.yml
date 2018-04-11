@@ -42,17 +42,18 @@ spec:
             secretName: sysdig-key
       containers:
       - name: custom-metrics-server
-        image: mateobur/custom-metrics-adapter:latest
+        image: sevein/k8s-sysdig-adapter:latest
         volumeMounts:
           - name: sysdig-key
             mountPath: "/etc/sysdig-key"
             readOnly: true
         args:
-        - --deploymentname=kuard
-        - --servicename=kuard
-        - --kubernetesnamespace=default
-        - --targetmetric=net.http.request.count
-        - --metrics-relist-interval=30s
+        # TODO
+        # - --deploymentname=kuard
+        # - --servicename=kuard
+        # - --kubernetesnamespace=default
+        # - --targetmetric=net.http.request.count
+        # - --metrics-relist-interval=30s
         - --v=10
         - --logtostderr=true
         ports:

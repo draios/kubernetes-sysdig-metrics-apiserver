@@ -1,4 +1,6 @@
-# k8s-sysdig-adapter
+# Kubernetes Custom Metrics Adapter for Sysdig
+
+[![Build status][1]][2]
 
 Table of contents:
 
@@ -22,7 +24,6 @@ Once it's installed you should be able to deploy `HorizontalPodAutoscaler`
 objects (also known as autoscalers) fed with metrics provided by Sysdig Monitor.
 The autoscaler object must use the `autoscaling/v2beta1` form like in the
 following example:
-
 
 ```yaml
 ---
@@ -54,7 +55,7 @@ the threshold (in the example, 100 reqs/min).
 
 `k8s-sysdig-adapter` is distributed as a Docker image.
 
-You can find it at `quay.io/sevein/k8s-sysdig-adapter:latest`.
+You can find it at `sevein/k8s-sysdig-adapter:latest`.
 
 ## Installation
 
@@ -196,7 +197,7 @@ Now let's confirm that the core components are in a healthy state:
 
 You're ready! :tada:
 
-## Links
+## Relevant links
 
 From the Kubernetes project:
 
@@ -208,8 +209,11 @@ From the Kubernetes project:
 Other links:
 
 - [Sysdig's blog post about HPA][l5]
-- [Kubernetes Prometheus Adapter][l6] 
+- [Kubernetes Prometheus Adapter][l6]
+- [kubeadm workshop][l7]
 
+[1]: https://travis-ci.org/sevein/k8s-sysdig-adapter.svg?branch=master
+[2]: https://travis-ci.org/sevein/k8s-sysdig-adapter
 [kuard]: https://github.com/kubernetes-up-and-running/kuard
 [custom-metrics-api-types]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
 [hpa]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/#horizontalpodautoscaler-autoscaling-v2beta1-
@@ -226,3 +230,4 @@ Other links:
 [l4]: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/horizontal-pod-autoscaler.md
 [l5]: https://sysdig.com/blog/kubernetes-scaler/
 [l6]: https://github.com/directXMan12/k8s-prometheus-adapter/
+[l7]: https://github.com/luxas/kubeadm-workshop

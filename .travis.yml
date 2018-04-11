@@ -1,0 +1,14 @@
+---
+language: go
+go_import_path: github.com/sevein/k8s-sysdig-adapter
+go:
+  - 1.10.x
+
+sudo: false
+
+install:
+  - go get -u github.com/golang/dep/cmd/dep
+    && dep ensure -vendor-only -v
+
+script:
+  - make check
