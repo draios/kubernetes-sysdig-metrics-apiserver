@@ -7,7 +7,7 @@ Table of contents:
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Playground](#playground)
-- [Links](#links)
+- [Relevant links](#relevant-links)
 
 ## Introduction
 
