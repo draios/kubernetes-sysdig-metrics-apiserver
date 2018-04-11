@@ -1,3 +1,7 @@
+REGISTRY := sevein
+IMAGE := $(REGISTRY)/k8s-sysdig-adapter
+VERSION := $(shell git describe --tags --always --dirty)
+
 test: install
 	go test ./...
 
@@ -7,3 +11,9 @@ check: test
 
 install:
 	go install -v ./...
+
+build-image:
+	docker build -t $(IMAGE):$(VERSION) .
+
+push-image: build-image
+	docker push $(IMAGE):$(VERSION)
