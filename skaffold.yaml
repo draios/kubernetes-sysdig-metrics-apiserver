@@ -4,6 +4,7 @@ kind: Config
 build:
   artifacts:
   - imageName: sevein/k8s-sysdig-adapter
+    dockerfilePath: Dockerfile.skaffold
     workspace: .
     docker: {}
   local: {}
