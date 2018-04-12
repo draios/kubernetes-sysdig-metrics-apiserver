@@ -96,7 +96,7 @@ Now we're ready to start! :tada:
     ```
 
 2. Install Sysdig Monitor if you haven't done it yet - they have
-   (great docs)[sysdig-monitor-docs-installation] that you can use. In this
+   [great docs][sysdig-monitor-docs-installation] that you can use. In this
    example, we're going to install it using a `DaemonSet` object as follows:
 
    ```
