@@ -58,7 +58,7 @@ spec:
           secretName: sysdig-monitor-api-token
       containers:
       - name: custom-metrics-server
-        image: sevein/k8s-sysdig-adapter:latest
+        image: sevein/k8s-sysdig-adapter
         command: ["adapter"]
         args:
         # TODO

@@ -1,0 +1,13 @@
+---
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  artifacts:
+  - imageName: sevein/k8s-sysdig-adapter
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+    - ./deploy/*.yml

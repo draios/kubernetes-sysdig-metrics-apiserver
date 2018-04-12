@@ -36,13 +36,24 @@ echo "br_netfilter" >> /etc/modules
 echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.conf
 sysctl -p
 
-echo "=> Setting up Kubernetes repository"
-apt-get update && apt-get install -y apt-transport-https
-curl -Ls https://apt.kubernetes.io/doc/apt-key.gpg | apt-key add -
+echo "=> Setting up repositories"
+apt-get update && apt-get install -y apt-transport-https curl ca-certificates
+curl -fsSL https://apt.kubernetes.io/doc/apt-key.gpg | apt-key add -
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list
+echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable" > /etc/apt/sources.list.d/docker.list
 
 echo "=> Installing dependencies"
-apt-get update && apt-get install -y docker.io kubeadm kubelet kubectl ifupdown-extra
+apt-get update && apt-get install -y \
+  docker-ce=$(apt-cache madison docker-ce | grep 18.03 | head -1 | awk '{print $3}') \
+  kubeadm kubelet kubectl \
+  ifupdown-extra
+
+# <TODO>
+# Add "-H tcp://172.17.8.101:2376" to Docker's systemd unit configuration so
+# the developer can access to the Docker daemon from the host. This is useful
+# during the development workflow, e.g. `skaffold dev`.
+# </TODO>
 
 echo "=> Configuring kubelet arguments"
 CGROUP_DRIVER=$(sudo docker info | grep "Cgroup Driver" | awk '{print $3}')

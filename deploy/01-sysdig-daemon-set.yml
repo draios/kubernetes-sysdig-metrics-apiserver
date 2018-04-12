@@ -1,8 +1,3 @@
-# This document is borrowed from:
-# https://github.com/draios/sysdig-cloud-scripts/blob/master/agent_deploy/kubernetes/sysdig-daemonset.yaml
-#
-# It could be outdated!
-
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1alpha1

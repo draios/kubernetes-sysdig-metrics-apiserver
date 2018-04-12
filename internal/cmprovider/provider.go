@@ -105,5 +105,6 @@ func (l *cachingMetricsLister) RunUntil(stopChan <-chan struct{}) {
 
 func (l *cachingMetricsLister) updateMetrics() error {
 	glog.V(10).Infof("Set available metric list from Sysdig...")
+	time.Sleep(1 * time.Second)
 	return nil
 }
