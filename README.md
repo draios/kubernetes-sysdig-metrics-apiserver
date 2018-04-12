@@ -11,6 +11,7 @@ Table of contents:
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [Relevant links](#relevant-links)
+- [Credits and License](#credits-and-license)
 
 ## Introduction
 
@@ -172,6 +173,18 @@ Other links:
 - [kubeadm workshop][l7]
 - [Basic Custom Metrics API server using minikube][l8]
 
+## Credits and license
+
+This project wouldn't be possible without the great job done by others. See the
+links above for some of the things I've been using in different ways.
+
+Thanks to Dave Cheney and Joe Beda for being so welcoming with my contributions
+to the Contour project - that was my first experience as a developer in the
+Kubernetes project. The tagging policy and the contributing guide in this
+project is based on Contour's.
+
+This project is open source and it uses a [permissive license][license].
+
 [l1]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
 [l2]: https://github.com/kubernetes-incubator/custom-metrics-apiserver
 [l3]: https://github.com/kubernetes/apiserver
@@ -189,6 +202,7 @@ Other links:
 [issues]: https://github.com/sevein/k8s-sysdig-adapter/issues
 [contributing]: /CONTRIBUTING.md
 [code-of-conduct]: /CODE_OF_CONDUCT.md
+[license]: /LICENSE
 [kuard]: https://github.com/kubernetes-up-and-running/kuard
 [custom-metrics-api-types]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
 [hpa]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/#horizontalpodautoscaler-autoscaling-v2beta1-
