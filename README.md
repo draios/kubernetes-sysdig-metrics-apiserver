@@ -152,6 +152,7 @@ Other links:
 - [Sysdig's blog post about HPA][l5]
 - [Kubernetes Prometheus Adapter][l6]
 - [kubeadm workshop][l7]
+- [Basic Custom Metrics API server using minikube][l8]
 
 [l1]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
 [l2]: https://github.com/kubernetes-incubator/custom-metrics-apiserver
@@ -160,6 +161,7 @@ Other links:
 [l5]: https://sysdig.com/blog/kubernetes-scaler/
 [l6]: https://github.com/directXMan12/k8s-prometheus-adapter/
 [l7]: https://github.com/luxas/kubeadm-workshop
+[l8]: https://github.com/vishen/k8s-custom-metrics
 
 [1]: https://travis-ci.org/sevein/k8s-sysdig-adapter.svg?branch=master
 [2]: https://travis-ci.org/sevein/k8s-sysdig-adapter
