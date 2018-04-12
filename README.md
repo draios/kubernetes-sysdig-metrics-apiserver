@@ -8,6 +8,8 @@ Table of contents:
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Playground](#playground)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
 - [Relevant links](#relevant-links)
 
 ## Introduction
@@ -138,6 +140,22 @@ this project or for development purposes.
 [issue #3](https://github.com/sevein/k8s-sysdig-adapter/issues/3) for more
 details.
 
+## Troubleshooting
+
+If you encounter any problems that the documentation does not address,
+[file an issue][new-issue].
+
+## Contributing
+
+Thanks for taking the time to join our community and start contributing!
+
+- Please familiarize yourself with the [Code of Conduct][code-of-conduct]
+  before contributing.
+- See [CONTRIBUTING.md][contributing] for information about setting up your
+  environment, the workflow that we expect, and instructions on the developer
+  certificate of origin that we require.
+- Check out the [issues][issues] and [our roadmap][roadmap].
+
 ## Relevant links
 
 From the Kubernetes project:
@@ -166,6 +184,11 @@ Other links:
 [1]: https://travis-ci.org/sevein/k8s-sysdig-adapter.svg?branch=master
 [2]: https://travis-ci.org/sevein/k8s-sysdig-adapter
 
+[new-issue]: https://github.com/sevein/k8s-sysdig-adapter/issues/new
+[roadmap]: https://github.com/sevein/k8s-sysdig-adapter/milestones
+[issues]: https://github.com/sevein/k8s-sysdig-adapter/issues
+[contributing]: /CONTRIBUTING.md
+[code-of-conduct]: /CODE_OF_CONDUCT.md
 [kuard]: https://github.com/kubernetes-up-and-running/kuard
 [custom-metrics-api-types]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
 [hpa]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/#horizontalpodautoscaler-autoscaling-v2beta1-
