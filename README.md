@@ -118,84 +118,13 @@ Use these instructions only as a reference. Every deployment is unique!
 
 ## Playground
 
-The playground is designed to run `k8s-sysdig-adapter` locally using virtual
-machines. We provision a Kubernetes cluster with a single controller node and a
-configurable number of worker nodes.
+You can find a playground based on Vagrant virtual machines under the
+[playground](./playground) directory in this repository. You can use it to demo
+this project or for development purposes.
 
-This playground borrows some ideas from other Vagrant-based environments I've
-found in projects like [kubevirt][p1], [k8s-snowflake][p2] or
-[kubernetes-ansible-vagrant][p3]. Thank you!
-
-### Requirements
-
-**Please use the most recent versions of Vagrant and VirtualBox!**
-
-Each node is assigned 2GB of RAM, including the controller node.
-
-### Installation
-
-To create the environment run:
-
-    ./playground/setup.sh
-
-Optionally, you can define the number of worker nodes and/or enable the debug
-mode so the shell scripts become verbose, e.g.:
-
-    env DEBUG=1 WORKERS=2 ./playground/setup.sh
-
-This script is going to do a few things for us:
-
-- It runs `vagrant up` for us to provision the virtual machines, which uses
-[bootstrap.sh][p4] to install the necessary packages and apply a few tweaks on
-each node so the Kubernetes components can run properly.
-
-- It runs [kubeadm.sh][p5] which uses [kubeadm][p6] to set up the Kubernetes
-cluster. The kubeconfig generated is copied in a temporary directory of the host
-machine and its location is printed before the script ends so you can use it to
-operate the cluster.
-
-If the script completes successfully you should see something like the
-following:
-
-```
-We're done, thank you for waiting!
-kubectl config available in /tmp/tmp.8nJG5UCHA7/config
-
-Usage example:
-$   export KUBECONFIG=/tmp/tmp.8nJG5UCHA7/config
-$   kubectl get nodes
--------------------------------------------------------------------------
-```
-
-Copy the `config` file somewhere else if your temporary folder is not
-persistent. You can optionally consolidate the output with your local
-`.kube/config` - we thought it would be safer if you do that manually!
-
-### Check the status of the cluster
-
-Let's make sure that the cluster is running as expected. We're going to export
-a custom `KUBECONFIG` environment string so we don't have to pass the location
-on every command.
-
-    $ export KUBECONFIG=/tmp/tmp.8nJG5UCHA7/config
-
-Let's confirm that all the nodes are listed as ready:
-
-    $ kubectl get nodes
-    NAME              STATUS    ROLES     AGE       VERSION
-    controller-node   Ready     master    4m        v1.10.0
-    worker-node-1     Ready     <none>    4m        v1.10.0
-    worker-node-2     Ready     <none>    4m        v1.10.0
-
-Now let's confirm that the core components are in a healthy state:
-
-    $ kubectl get componentstatuses
-    NAME                 STATUS    MESSAGE              ERROR
-    controller-manager   Healthy   ok
-    scheduler            Healthy   ok
-    etcd-0               Healthy   {"health": "true"}
-
-You're ready! :tada:
+[minikube][minikube] has not been tried yet! See
+[issue #3](https://github.com/sevein/k8s-sysdig-adapter/issues/3) for more
+details.
 
 ## Relevant links
 
@@ -212,18 +141,6 @@ Other links:
 - [Kubernetes Prometheus Adapter][l6]
 - [kubeadm workshop][l7]
 
-[1]: https://travis-ci.org/sevein/k8s-sysdig-adapter.svg?branch=master
-[2]: https://travis-ci.org/sevein/k8s-sysdig-adapter
-[kuard]: https://github.com/kubernetes-up-and-running/kuard
-[custom-metrics-api-types]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
-[hpa]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/#horizontalpodautoscaler-autoscaling-v2beta1-
-[sysdig-monitor]: https://sysdig.com/product/monitor/
-[sysdig-monitor-inst-docs]: https://support.sysdig.com/hc/en-us/articles/206770633-Sysdig-Install-Kubernetes-
-[p1]: https://github.com/kubevirt/kubevirt
-[p2]: https://github.com/jessfraz/k8s-snowflake
-[p3]: https://github.com/errordeveloper/kubernetes-ansible-vagrant
-[p4]: ./bootstrap.sh
-[p5]: ./kubeadm.sh
 [l1]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
 [l2]: https://github.com/kubernetes-incubator/custom-metrics-apiserver
 [l3]: https://github.com/kubernetes/apiserver
@@ -231,3 +148,13 @@ Other links:
 [l5]: https://sysdig.com/blog/kubernetes-scaler/
 [l6]: https://github.com/directXMan12/k8s-prometheus-adapter/
 [l7]: https://github.com/luxas/kubeadm-workshop
+
+[1]: https://travis-ci.org/sevein/k8s-sysdig-adapter.svg?branch=master
+[2]: https://travis-ci.org/sevein/k8s-sysdig-adapter
+
+[kuard]: https://github.com/kubernetes-up-and-running/kuard
+[custom-metrics-api-types]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
+[hpa]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/#horizontalpodautoscaler-autoscaling-v2beta1-
+[sysdig-monitor]: https://sysdig.com/product/monitor/
+[sysdig-monitor-inst-docs]: https://support.sysdig.com/hc/en-us/articles/206770633-Sysdig-Install-Kubernetes-
+[minikube]: https://github.com/kubernetes/minikube
