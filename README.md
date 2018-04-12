@@ -5,6 +5,7 @@
 Table of contents:
 
 - [Introduction](#introduction)
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Playground](#playground)
 - [Relevant links](#relevant-links)
@@ -47,19 +48,34 @@ spec:
       targetValue: 100
 ```
 
-This autoscaler is based on the `net.http.request.count` metric. The autoscaler
-will adjust the number of pods deployed as the metric fluctuates over or below
-the threshold (in the example, 100 reqs/min).
+In the example above, we've created an autoscaler based on the
+`net.http.request.count` metric provided by Sysdig Monitor. The autoscaler will
+adjust the number of pods deployed as the metric fluctuates over or below the
+threshold (in the example, 100 reqs/min).
 
-## Download
+## Prerequisites
 
-`k8s-sysdig-adapter` is distributed as a Docker image.
+You're going to need:
 
-You can find it at `sevein/k8s-sysdig-adapter:latest`.
+- **Kubernetes 1.6+**
+- **Sysdig Monitor** - (see the [installation instructions][sysdig-monitor-docs-installation]).
+- **Sysdig Monitor Access Key** - which you've used during the installation of Sysdig Monitor.
+- **Sysdig Monitor API Token** - see where to find it in [these instructions][sysdig-monitor-docs-api]. Do not confuse the **API token** with the **agent access key**, they're not the same!. This is the API token that our metrics server is going to use when accessing the API.
 
 ## Installation
 
-Use these instructions only as a reference. Every deployment is unique!
+The configuration files that you can find under the [deploy](./deploy) directory
+are just for reference. Every deployment is unique so tweak them as needed. At
+the very least, you need to use your own **access key** and **API token** as
+follows:
+
+- [01-sysdig-daemon-set.yml](./deploy/01-sysdig-daemon-set.yml) installs the
+  Sysdig agent - edit it so it uses your own access key.
+- [03-sysdig-metrics-server.yml](./deploy/03-sysdig-metrics-server.yml) installs
+  a `secret` in Kubernetes containing the Sysdig Monitor API token - edit it to
+  use your own token.
+
+Now we're ready to start! :tada:
 
 1. For the purpose of this example we're going to deploy [kuard][kuard], a demo
    application found in the "Kubernetes Up and Running" book. This application
@@ -79,38 +95,34 @@ Use these instructions only as a reference. Every deployment is unique!
     kuard-bcc7bf7df-zg8nc   1/1       Running   0          1m        10.46.0.3   worker-node-2
     ```
 
-2. [Install the Sysdig Monitor agent][sysdig-monitor-inst-docs]. It's deployed
-   as a DaemonSet. Make sure that you include in the documet your own agent
-   access key.
+2. Install Sysdig Monitor if you haven't done it yet - they have
+   (great docs)[sysdig-monitor-docs-installation] that you can use. In this
+   example, we're going to install it using a `DaemonSet` object as follows:
 
    ```
    $ kubectl apply -f deploy/01-sysdig-daemon-set.yml
    ```
 
-3. The following command is going to deploy the required RBAC roles,
-   permissions and bindings. It uses the namespace `custom-metrics`.
+   **Don't forget to add your own access key to the file!**
+
+3. The following command is going to deploy a number of required objects like
+   a custom namespace `custom-metrics`, required RBAC roles, permissions,
+   bindings and the service object for our metrics server:
 
    ```
    $ kubectl apply -f deploy/02-sysdig-metrics-rbac.yml
    ```
 
-4. Record the base64-encoded version of your agent key.<br />
-   Let's assume that our key is `59493980-bbab-44e5-81b2-d80d59192fcd`.
-
-   ```
-   $ echo -n 59493980-bbab-44e5-81b2-d80d59192fcd | base64
-   NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
-   ```
-
-5. Deploy the metrics server. Make sure that the file is edited as needed, e.g.
-   target your own service and deployment and use your own base64-encoded agent
-   access key that we've generated in the previous step.
+4. Deploy the metrics server with:
 
    ```
    $ kubectl apply -f deploy/03-sysdig-metrics-server.yml
    ```
 
-6. Finally, deploy the autoscaler targeting our `kuard` service.
+   **Don't forget to add your own API token to the file!**
+
+This is it! Now we're ready to create the autoscaler targeting our `kuard`
+service. Run:
 
    ```
    $ kubectl apply -f deploy/04-kuard-hpa.yml
@@ -156,5 +168,6 @@ Other links:
 [custom-metrics-api-types]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
 [hpa]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/#horizontalpodautoscaler-autoscaling-v2beta1-
 [sysdig-monitor]: https://sysdig.com/product/monitor/
-[sysdig-monitor-inst-docs]: https://support.sysdig.com/hc/en-us/articles/206770633-Sysdig-Install-Kubernetes-
+[sysdig-monitor-docs-installation]: https://support.sysdig.com/hc/en-us/articles/206770633-Sysdig-Install-Kubernetes-
+[sysdig-monitor-docs-api]: https://support.sysdig.com/hc/en-us/articles/205233166
 [minikube]: https://github.com/kubernetes/minikube

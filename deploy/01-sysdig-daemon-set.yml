@@ -76,7 +76,7 @@ spec:
         env:
         - name: ACCESS_KEY                                  #REQUIRED - replace with your Sysdig Cloud access key
           # This is not a valid agent key.
-          value: 59493980-bbab-44e5-81b2-d80d59192fcd
+          value: 5c898764-f5cc-463c-8052-8644ca547424
 #        - name: COLLECTOR_PORT                             #OPTIONAL - on-prem install only
 #          value: "6443"
 #        - name: TAGS                                       #OPTIONAL

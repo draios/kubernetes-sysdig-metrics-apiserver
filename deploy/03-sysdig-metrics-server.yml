@@ -2,19 +2,19 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sysdig-key
+  name: sysdig-monitor-api-token
   namespace: custom-metrics
 type: Opaque
 data:
   # This is not a valid agent key! You should create your own, e.g.:
   #
-  #     $ kubectl delete secret sysdig-key --namespace=custom-metrics
+  #     $ kubectl delete secret sysdig-monitor-api-token --namespace=custom-metrics
   #
-  #     $ kubectl create secret generic sysdig-key \
+  #     $ kubectl create secret generic sysdig-monitor-api-token \
   #           --namespace=custom-metrics \
-  #           --from-literal=sysdig-key=<YOUR OWN KEY>
+  #           --from-literal=sysdig-monitor-api-token=<YOUR OWN KEY>
   #
-  #     $ kubectl get secret sysdig-key -o json
+  #     $ kubectl get secret sysdig-monitor-api-token -o json
   #
   # You could also encode the key from the command-line interface and edit the
   # object manually, e.g.:
@@ -22,9 +22,9 @@ data:
   #   $ echo -n "59493980-bbab-44e5-81b2-d80d59192fcd" | base64
   #   NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
   #
-  #   $ env KUBE_EDITOR=vim kubectl edit secret sysdig-key
+  #   $ env KUBE_EDITOR=vim kubectl edit secret sysdig-monitor-api-token
   #
-  sysdig-key: NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
+  sysdig-monitor-api-token: NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
 
 ---
 apiVersion: apps/v1beta2
@@ -53,9 +53,9 @@ spec:
         effect: NoSchedule
       serviceAccountName: custom-metrics-apiserver
       volumes:
-      - name: sysdig-key
+      - name: sysdig-monitor-api-token
         secret:
-          secretName: sysdig-key
+          secretName: sysdig-monitor-api-token
       containers:
       - name: custom-metrics-server
         image: sevein/k8s-sysdig-adapter:latest
@@ -70,8 +70,8 @@ spec:
         - "--v=10"
         - "--logtostderr=true"
         volumeMounts:
-        - name: sysdig-key
-          mountPath: "/etc/sysdig-key"
+        - name: sysdig-monitor-api-token
+          mountPath: "/etc/sysdig-monitor-api-token"
           readOnly: true
         ports:
         - containerPort: 443
