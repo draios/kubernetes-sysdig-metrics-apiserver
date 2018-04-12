@@ -12,3 +12,4 @@ RUN CGO_ENABLED=0 GOOS=linux go install -ldflags="-w -s" -v github.com/sevein/k8
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 COPY --from=0 /go/bin/adapter /bin/adapter
+CMD ["/bin/adapter"]
