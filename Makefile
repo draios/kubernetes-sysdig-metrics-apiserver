@@ -14,6 +14,8 @@ install:
 
 build-image:
 	docker build -t $(IMAGE):$(VERSION) .
+	docker tag $(IMAGE):$(VERSION) $(IMAGE):latest
 
 push-image: build-image
 	docker push $(IMAGE):$(VERSION)
+	docker push $(IMAGE):latest
