@@ -5,9 +5,8 @@ set -o errexit
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# The default setup uses three virtual machines.
-# One controller and N=2 workers. Tweak the number of workers below.
-export WORKERS=${WORKERS:-2}
+# The default setup uses two virtual machines: 1 controller + 1 worker.
+export WORKERS=${WORKERS:-1}
 export SSH_CONFIG="${DIR}/../.vagrant/ssh_config"
 export SSH_KEYFILE="${HOME}/.vagrant.d/insecure_private_key"
 export VM_USER="vagrant"

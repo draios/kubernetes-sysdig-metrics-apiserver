@@ -9,10 +9,9 @@ readonly ipaddr="$1"
 readonly host="$2"
 readonly sysdig_access_key="$3"
 
-if [ -z "${sysdig_access_key}" ]; then
-  echo "Missing parameters"
-  exit 1
-fi
+# if [ -z "${sysdig_access_key}" ]; then
+#   # TODO: deploy agent automagically?
+# fi
 
 if ! grep vagrant /home/vagrant/.ssh/authorized_keys > /dev/null; then
   exit

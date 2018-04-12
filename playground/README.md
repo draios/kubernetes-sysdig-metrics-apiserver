@@ -16,12 +16,15 @@ Each node is assigned 2GB of RAM, including the controller node.
 
 To create the environment run:
 
-    ./playground/setup.sh
+    ./setup.sh
 
 Optionally, you can define the number of worker nodes and/or enable the debug
 mode so the shell scripts become verbose, e.g.:
 
-    env DEBUG=1 WORKERS=2 ./playground/setup.sh
+    env DEBUG=1 WORKERS=2 ./setup.sh
+
+The default is to deplay a single worker which is enough in most cases.
+[Issue #1][7] needs to be considered if you're deploying more than one worker.
 
 This script is going to do a few things for us:
 
@@ -83,3 +86,4 @@ You're ready! :tada:
 [4]: ./mixins/bootstrap.sh
 [5]: ./misins/kubeadm.sh
 [6]: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm/
+[7]: https://github.com/sevein/k8s-sysdig-adapter/issues/1

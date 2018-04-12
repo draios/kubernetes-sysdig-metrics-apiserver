@@ -4,7 +4,7 @@
 NETWORK = "172.17.8."
 NETMASK = "255.255.255.0"
 BOX = "bento/ubuntu-16.04"
-WORKERS = ENV.has_key?('WORKERS') ? ENV['WORKERS'].to_i : 2
+WORKERS = ENV.has_key?('WORKERS') ? ENV['WORKERS'].to_i : 1
 SYSDIG_ACCESS_KEY = ENV.has_key?('SYSDIG_ACCESS_KEY') ? ENV['SYSDIG_ACCESS_KEY'] : ""
 
 HOSTS = {
