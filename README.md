@@ -19,15 +19,14 @@ Table of contents:
 [Custom Metrics API][custom-metrics-api-types] using
 [Sysdig Monitor][sysdig-monitor].
 
-Essentially, this component is a custom Kubernetes API server that queries
-Sysdig Monitor's API for metrics data and exposes it to Kubernetes. You can
-think of it as a channel adapter between Sysdig and the
-[Horizontal Pod Autoscaling API][hpa] for Kubernetes.
+If you have a Kubernetes cluster and you are a Sysdig user, this adapter
+enables you to create [horizontal pod autoscalers][l4] based on metrics provided
+by Sysdig's monitoring solution.
 
-Once it's installed you should be able to deploy `HorizontalPodAutoscaler`
-objects (also known as autoscalers) fed with metrics provided by Sysdig Monitor.
-The autoscaler object must use the `autoscaling/v2beta1` form like in the
-following example:
+In the following example, we're creating an autoscaler based on the
+`net.http.request.count` metric. The autoscaler will adjust the number of pods
+deployed for our service as the metric fluctuates over or below the threshold
+(`targetValue`).
 
 ```yaml
 ---
@@ -50,11 +49,6 @@ spec:
       metricName: net.http.request.count
       targetValue: 100
 ```
-
-In the example above, we've created an autoscaler based on the
-`net.http.request.count` metric provided by Sysdig Monitor. The autoscaler will
-adjust the number of pods deployed as the metric fluctuates over or below the
-threshold (in the example, 100 reqs/min).
 
 ## Prerequisites
 
@@ -124,12 +118,31 @@ Now we're ready to start! :tada:
 
    **Don't forget to add your own API token to the file!**
 
-This is it! Now we're ready to create the autoscaler targeting our `kuard`
-service. Run:
+   It should be possible to retrieve the full list of metrics available using
+   the following command:
+
+   ```
+   $ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq -r ".resources[].name"
+   ```
+
+5. Deploy our custom autoscaler that scales our service based on the
+   `net.http.request.count` metric.
 
    ```
    $ kubectl apply -f deploy/04-kuard-hpa.yml
    ```
+
+At this point you should be able to see the autoscaler in action. In the
+example, we set a threshold of 100 requests per minute. Let's generate some
+traffic with [hey][hey]:
+
+    $ hey -c 5 -q 85 -z 24h http://10.103.86.213
+
+Finally, use the following command to watch the autoscaler:
+
+    $ kubectl get hpa kuard-autoscaler -w
+    NAME               REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+    kuard-autoscaler   Deployment/kuard   105763m/100   3         10        8          2d
 
 ## Playground
 
@@ -205,8 +218,8 @@ This project is open source and it uses a [permissive license][license].
 [license]: /LICENSE
 [kuard]: https://github.com/kubernetes-up-and-running/kuard
 [custom-metrics-api-types]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
-[hpa]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/#horizontalpodautoscaler-autoscaling-v2beta1-
 [sysdig-monitor]: https://sysdig.com/product/monitor/
 [sysdig-monitor-docs-installation]: https://support.sysdig.com/hc/en-us/articles/206770633-Sysdig-Install-Kubernetes-
 [sysdig-monitor-docs-api]: https://support.sysdig.com/hc/en-us/articles/205233166
 [minikube]: https://github.com/kubernetes/minikube
+[hey]: https://github.com/rakyll/hey

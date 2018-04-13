@@ -46,32 +46,28 @@ func newGetDataCmd(out io.Writer) *cobra.Command {
 			return runGetData(out, cmd)
 		},
 	}
-	cmd.Flags().String("metric", "", "Name of the metric")
+	cmd.Flags().String("metric", "", "metric name")
+	cmd.Flags().String("filter", "", "query filter")
 	return cmd
 }
 
 func runGetData(out io.Writer, cmd *cobra.Command) error {
 	metric, _ := cmd.Flags().GetString("metric")
+	filter, _ := cmd.Flags().GetString("filter")
 	if metric == "" {
 		return errors.New("metric name is empty")
 	}
-	req := &sdc.GetDataRequest{
-		DataSourceType: "host",
-		Last:           600,
-		Sampling:       60,
-		Metrics: []sdc.Metric{
-			sdc.Metric{
-				ID:           metric,
-				Aggregations: sdc.MetricAggregation{Time: "timeAvg", Group: "avg"},
-			},
-		},
+	req := &sdc.GetDataRequest{Last: 60, Sampling: 60}
+	req = req.WithMetric(metric, &sdc.MetricAggregation{Group: "avg", Time: "timeAvg"})
+	if filter != "" {
+		req = req.WithFilter(filter)
 	}
-	data, _, err := client.Data.Get(ctx, req)
+	payload, _, err := client.Data.Get(ctx, req)
 	if err != nil {
 		return err
 	}
-	for _, item := range data.Data {
-		fmt.Fprintf(out, "Data point: %f (%s)\n", item.Points, item.Time.String())
+	for _, item := range payload.Samples {
+		fmt.Fprintf(out, "Data point: %v (%s)\n", string(item.Values[0]), item.Time.String())
 	}
 	return nil
 }
@@ -91,7 +87,7 @@ func runListMetrics(out io.Writer, cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	for id, metric := range *metrics {
+	for id, metric := range metrics {
 		fmt.Fprintf(out, "Metric name: %s, type: %s\n", id, metric.Type)
 	}
 	return nil
