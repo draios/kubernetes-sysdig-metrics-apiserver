@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultBaseURL = "https://app.sysdigcloud.com/api"
+	defaultBaseURL = "https://app.sysdigcloud.com/api/"
 	userAgent      = "sdc Go library"
 	mediaType      = "application/json"
 )
@@ -27,6 +27,9 @@ type Client struct {
 
 	// User agent for client.
 	UserAgent string
+
+	// Security API token.
+	Token string
 
 	// Services used for communicating with the API.
 	Data DataService
@@ -51,14 +54,14 @@ type ErrorResponse struct {
 }
 
 // NewClient returns a new Sysdig Monitor API client.
-func NewClient(httpClient *http.Client) *Client {
+func NewClient(httpClient *http.Client, token string) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
 
 	baseURL, _ := url.Parse(defaultBaseURL)
 
-	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
+	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent, Token: token}
 	c.Data = &DataServiceOp{client: c}
 
 	return c
@@ -68,8 +71,8 @@ func NewClient(httpClient *http.Client) *Client {
 type ClientOpt func(*Client) error
 
 // New returns a new Sysdig Cloud API client instance.
-func New(httpClient *http.Client, opts ...ClientOpt) (*Client, error) {
-	c := NewClient(httpClient)
+func New(httpClient *http.Client, token string, opts ...ClientOpt) (*Client, error) {
+	c := NewClient(httpClient, token)
 	for _, opt := range opts {
 		if err := opt(c); err != nil {
 			return nil, err
@@ -128,6 +131,7 @@ func (c *Client) NewRequest(ctx context.Context, method, urlStr string, body int
 	req.Header.Add("Content-Type", mediaType)
 	req.Header.Add("Accept", mediaType)
 	req.Header.Add("User-Agent", c.UserAgent)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	return req, nil
 }
 
