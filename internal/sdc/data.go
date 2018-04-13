@@ -2,6 +2,8 @@ package sdc
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -10,7 +12,7 @@ const dataBasePath = "data"
 
 type DataService interface {
 	Get(context.Context, *GetDataRequest) (*GetDataResponse, *Response, error)
-	Metrics(context.Context) (*GetDataMetricsResponse, *Response, error)
+	Metrics(context.Context) (Metrics, *Response, error)
 }
 
 // DataServiceOp handles communication with Data methods of the Sysdig Cloud
@@ -23,7 +25,7 @@ var _ DataService = &DataServiceOp{}
 
 type Metric struct {
 	ID           string            `json:"id"`
-	Aggregations MetricAggregation `json:"aggregations"`
+	Aggregations MetricAggregation `json:"aggregations,omitempty"`
 }
 
 type MetricAggregation struct {
@@ -42,42 +44,65 @@ type GetDataRequest struct {
 	Sampling       int      `json:"sampling,omitempty"`
 }
 
-type GetDataResponse struct {
-	Data []DataItem `json:"data"`
+func (gdr *GetDataRequest) WithMetric(id string, aggregation *MetricAggregation) *GetDataRequest {
+	m := &Metric{ID: id}
+	if aggregation != nil {
+		m.Aggregations = *aggregation
+	}
+	gdr.Metrics = append(gdr.Metrics, *m)
+	return gdr
 }
 
-type DataItem struct {
-	Points []interface{} `json:"d"`
-	Time   Timestamp     `json:"t"`
+func (gdr *GetDataRequest) WithFilter(filter string) *GetDataRequest {
+	gdr.Filter = filter
+	return gdr
+}
+
+type GetDataResponse struct {
+	// A list of time samples.
+	Samples []TimeSample `json:"data"`
+}
+
+type TimeSample struct {
+	Time   Timestamp         `json:"t"`
+	Values []json.RawMessage `json:"d"`
+}
+
+func (gdr *GetDataResponse) FirstValue() (json.RawMessage, error) {
+	if len(gdr.Samples) < 1 {
+		return nil, errors.New("zero time samples")
+	}
+	sample := gdr.Samples[0]
+	if len(sample.Values) < 1 {
+		return nil, errors.New("zero values found in the first sample")
+	}
+	return sample.Values[0], nil
 }
 
 func (s *DataServiceOp) Get(ctx context.Context, gdr *GetDataRequest) (*GetDataResponse, *Response, error) {
 	path := fmt.Sprintf("%s/", dataBasePath)
-
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, gdr)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	data := &GetDataResponse{}
 	resp, err := s.client.Do(ctx, req, data)
 	if err != nil {
 		return nil, resp, err
 	}
-
 	return data, resp, nil
 }
 
-type GetDataMetricsResponse map[string]MetricDefinition
+type Metrics map[string]MetricDefinition
 
 type MetricDefinition struct {
+	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	CanMonitor  bool     `json:"canMonitor"`
-	Hidden      bool     `json:"hidden`
+	Hidden      bool     `json:"hidden"`
 	GroupBy     []string `json:"groupBy"`
 	Namespaces  []string `json:"namespaces"`
-	Type        string   `json:"type"`
 
 	// Possible values:
 	// - "%" (percentage)
@@ -88,22 +113,26 @@ type MetricDefinition struct {
 	// - "number"
 	// - "relativeTime"
 	// - "string"
+	Type string `json:"type"`
+
+	// Possible values:
+	// - "counter"
+	// - "gauge"
+	// - "none", e.g.: id=kubernetes.service.name
+	// - "segmentBy", e.g.: id=host, id=port
 	MetricType string `json:"metricType"`
 }
 
-func (s *DataServiceOp) Metrics(ctx context.Context) (*GetDataMetricsResponse, *Response, error) {
+func (s *DataServiceOp) Metrics(ctx context.Context) (Metrics, *Response, error) {
 	path := fmt.Sprintf("%s/metrics", dataBasePath)
-
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	metrics := &GetDataMetricsResponse{}
-	resp, err := s.client.Do(ctx, req, metrics)
+	metrics := Metrics{}
+	resp, err := s.client.Do(ctx, req, &metrics)
 	if err != nil {
 		return nil, resp, err
 	}
-
 	return metrics, resp, nil
 }

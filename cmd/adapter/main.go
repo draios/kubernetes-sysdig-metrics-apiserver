@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/sevein/k8s-sysdig-adapter/internal/cmprovider"
+	"github.com/sevein/k8s-sysdig-adapter/internal/sdc"
 
 	// Temporar hack until I can vendor it.
 	_cma_server "github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/cmd/server"
@@ -30,6 +32,7 @@ func main() {
 	// Workaround for this issue: https://github.com/kubernetes/kubernetes/issues/17162.
 	flag.CommandLine.Parse([]string{})
 
+	// Initialize the log configuration the way that Kubernetes likes.
 	logs.InitLogs()
 	defer logs.FlushLogs()
 
@@ -44,6 +47,7 @@ func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 	baseOpts := _cma_server.NewCustomMetricsAdapterServerOptions(out, errOut)
 	o := adapterOpts{
 		CustomMetricsAdapterServerOptions: baseOpts,
+		DiscoveryInterval:                 10 * time.Minute,
 	}
 
 	cmd := &cobra.Command{
@@ -68,14 +72,15 @@ func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 
 	flags.StringVar(&o.RemoteKubeConfigFile, "lister-kubeconfig", o.RemoteKubeConfigFile,
 		"kubeconfig file pointing at the 'core' kubernetes server with enough rights to list any described objets")
-	flags.DurationVar(&o.MetricsRelistInterval, "metrics-relist-interval", o.MetricsRelistInterval,
-		"interval at which to re-list the set of all available metrics from Sysdig")
-	flags.DurationVar(&o.RateInterval, "rate-interval", o.RateInterval,
-		"period of time used to calculate rate metrics from cumulative metrics")
 	flags.DurationVar(&o.DiscoveryInterval, "discovery-interval", o.DiscoveryInterval,
 		"interval at which to refresh API discovery information")
-	flags.StringVar(&o.LabelPrefix, "label-prefix", o.LabelPrefix,
-		"prefix to expect on labels referring to pod resources. For example, if the prefix is 'kube_', any series with the 'kube_pod' label would be considered a pod metric")
+
+	flags.StringVar(&o.Metric, "metric", o.Metric,
+		"metric name as listed in Sysdig Monitor, e.g.: net.http.request.count")
+	flags.StringVar(&o.Namespace, "namespace", o.Namespace,
+		"namespace where the object is found, e.g.: default")
+	flags.StringVar(&o.Service, "service", o.Service,
+		"service object name, e.g.: kuard")
 
 	return cmd
 }
@@ -86,28 +91,34 @@ type adapterOpts struct {
 	// RemoteKubeConfigFile is the config used to list pods from the master API server
 	RemoteKubeConfigFile string
 
-	// MetricsRelistInterval is the interval at which to relist the set of available metrics
-	MetricsRelistInterval time.Duration
-
-	// RateInterval is the period of time used to calculate rate metrics
-	RateInterval time.Duration
-
 	// DiscoveryInterval is the interval at which discovery information is refreshed
 	DiscoveryInterval time.Duration
 
-	// LabelPrefix is the prefix to expect on labels for Kubernetes resources
-	// (e.g. if the prefix is "kube_", we'd expect a "kube_pod" label for pod metrics).
-	LabelPrefix string
+	// Metric is the name of the Sysdig Monitor metric that this server is using.
+	Metric string
+
+	// Namespace of the service object that this server is using.
+	Namespace string
+
+	// Service is the name of the service object that this server is using.
+	Service string
 }
 
 // runCustomMetricsAdapterServer runs our CustomMetricsAdapterServer.
 func (o adapterOpts) runCustomMetricsAdapterServer(stopCh <-chan struct{}) error {
+	// Sysdig API client configuration.
+	var token = os.Getenv("SDC_TOKEN")
+	if token == "" {
+		return errors.New("Sysdig Monitor API token not provided - pass it via environment string SDC_TOKEN")
+	}
+	sysdigClient := sdc.NewClient(nil, token)
+
+	// Kubernetes configuration.
 	config, err := o.Config()
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-
 	config.GenericConfig.EnableMetrics = true
 
 	var clientConfig *rest.Config
@@ -141,13 +152,12 @@ func (o adapterOpts) runCustomMetricsAdapterServer(stopCh <-chan struct{}) error
 		// Name of the CustomMetricsAdapterServer (for logging purposes).
 		customMetricAdapterName,
 		// CustomMetricsProvider.
-		cmprovider.NewSysdigProvider(dynamicMapper, clientPool, o.LabelPrefix, o.MetricsRelistInterval, o.RateInterval, stopCh),
+		cmprovider.NewSysdigProvider(dynamicMapper, clientPool, sysdigClient, o.Metric, o.Namespace, o.Service, stopCh),
 		// ExternalMetricsProvider (which we're not implementing)
 		nil,
 	)
 	if err != nil {
 		return err
 	}
-
 	return server.GenericAPIServer.PrepareRun().Run(stopCh)
 }

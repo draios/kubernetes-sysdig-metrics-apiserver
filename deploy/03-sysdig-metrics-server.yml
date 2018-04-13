@@ -12,7 +12,7 @@ data:
   #
   #     $ kubectl create secret generic sysdig-monitor-api-token \
   #           --namespace=custom-metrics \
-  #           --from-literal=sysdig-monitor-api-token=<YOUR OWN KEY>
+  #           --from-literal=token=<YOUR OWN KEY>
   #
   #     $ kubectl get secret sysdig-monitor-api-token -o json
   #
@@ -24,7 +24,8 @@ data:
   #
   #   $ env KUBE_EDITOR=vim kubectl edit secret sysdig-monitor-api-token
   #
-  sysdig-monitor-api-token: NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
+  # This is not a real token!
+  token: NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
 
 ---
 apiVersion: apps/v1beta2
@@ -58,21 +59,20 @@ spec:
           secretName: sysdig-monitor-api-token
       containers:
       - name: custom-metrics-server
-        image: sevein/k8s-sysdig-adapter
+        image: sevein/k8s-sysdig-adapter:latest
+        imagePullPolicy: Always
         command: ["adapter"]
         args:
-        # TODO
-        # - --deploymentname=kuard
-        # - --servicename=kuard
-        # - --kubernetesnamespace=default
-        # - --targetmetric=net.http.request.count
-        # - --metrics-relist-interval=30s
-        - "--v=10"
+        - "--namespace=default"
+        - "--service=kuard"
         - "--logtostderr=true"
-        volumeMounts:
-        - name: sysdig-monitor-api-token
-          mountPath: "/etc/sysdig-monitor-api-token"
-          readOnly: true
+        - "--v=10"
+        env:
+        - name: SDC_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sysdig-monitor-api-token
+              key: token
         ports:
         - containerPort: 443
         securityContext:
