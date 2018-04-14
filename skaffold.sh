@@ -1,26 +1,43 @@
 #!/usr/bin/env bash
 
-# Workaround until https://github.com/GoogleCloudPlatform/skaffold/issues/226 is solved.
+# Deployment script for developers.
+#
+# It assumes that:
+# - kubectl's current context is pointing to your cluster.
+# - docker's client is pointing to the daemon in the worker node.
+#
+# I use this script together with the `playground`.
+#
+# Temporary solution until I can use skaffold which I tried but it seems pretty
+# unstable and it does not support incremental builds yet - I'm really liking
+# its ideas though so I'm hoping to switch as soon as possible.
 
 set -o errexit
 set -o pipefail
 set -o nounset
-# set -o xtrace
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BIN="${DIR}/bin"
 
-# Build with cache
-CGO_ENABLED=0 GOOS=linux go install -ldflags="-w -s" -v github.com/sevein/k8s-sysdig-adapter/cmd/adapter
+IMAGE="sevein/k8s-sysdig-adapter"
+AGENT_KEY=${AGENT_KEY:?Need to set AGENT_KEY}
+SDC_TOKEN=${SDC_TOKEN:?Need to set SDC_TOKEN}
 
-# Copy binary in Docker's context
-[ -d ${BIN} ] || mkdir ${BIN}
-cp $GOPATH/bin/adapter ${BIN}/adapter
+# This should be doing incremental builds if you're using Go v1.10.
+env CGO_ENABLED=0 GOOS=linux go build -v -ldflags="-w -s" -o ${BIN}/adapter -v github.com/sevein/k8s-sysdig-adapter/cmd/adapter
 
-# Run skaffold
-skaffold run
+# Build image
+docker build -f Dockerfile.skaffold -t ${IMAGE} .
 
-# Ugly but it works for now!
-sleep 5
-SERVER_POD=$(kubectl -n custom-metrics get pod -o jsonpath='{.items[0].metadata.name}')
-kubectl -n custom-metrics logs -f ${SERVER_POD}
+# Tag it using its checksum
+tag=$(docker inspect --format='{{index .Id}}' sevein/k8s-sysdig-adapter | sed -e "s/^sha256://" | cut -c 10)
+docker tag ${IMAGE} "${IMAGE}:${tag}"
+
+# Prepare configuration and install it
+export AGENT_KEY=$(echo -n ${AGENT_KEY} | base64)
+export SDC_TOKEN=$(echo -n ${SDC_TOKEN} | base64)
+export IMAGE="${IMAGE}:${tag}"
+envsubst < ${DIR}/playground/mixins/deployment.yml.tmpl | kubectl apply -f -
+
+# Watch logs
+kubectl logs -n custom-metrics deployment/custom-metrics-apiserver -f
