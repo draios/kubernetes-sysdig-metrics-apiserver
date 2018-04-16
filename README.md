@@ -54,7 +54,7 @@ spec:
 
 You're going to need:
 
-- **Kubernetes 1.6+**
+- **Kubernetes 1.8+**
 - **Sysdig Monitor** - see the [installation instructions][sysdig-monitor-docs-installation].
 - **Sysdig Monitor Access Key** - which you've used during the installation of Sysdig Monitor.
 - **Sysdig Monitor API Token** - see where to find it in [these instructions][sysdig-monitor-docs-api]. Do not confuse the **API token** with the **agent access key**, they're not the same! This is the API token that our metrics server is going to use when accessing the API.
