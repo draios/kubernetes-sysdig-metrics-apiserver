@@ -81,12 +81,9 @@ func (p *sysdigProvider) metricFor(value float64, ts time.Time, groupResource sc
 }
 
 func (p *sysdigProvider) getSingle(info _cma_provider.CustomMetricInfo, namespace, name string) (*custom_metrics.MetricValue, error) {
-	/*
-		metric, ok := p.Metric(info.Metric)
-		if !ok {
-			return nil, _cma_provider.NewMetricNotFoundError(info.GroupResource, info.Metric)
-		}
-	*/
+	if _, ok := p.Metric(info.Metric); !ok {
+		return nil, _cma_provider.NewMetricNotFoundError(info.GroupResource, info.Metric)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), sysdigRequestTimeout)
 	defer cancel()

@@ -61,7 +61,7 @@ func hasNamespace(namespaces []string, wanted string) bool {
 }
 
 func (r *registry) UpdateMetrics(m sdc.Metrics) {
-	newDefs := map[string]*sdc.MetricDefinition{}
+	newDefs := make(map[string]*sdc.MetricDefinition)
 	for name, metric := range m {
 		// Ignore non-quantifiable metrics.
 		if metric.MetricType != "gauge" && metric.MetricType != "counter" {
@@ -69,8 +69,7 @@ func (r *registry) UpdateMetrics(m sdc.Metrics) {
 		}
 		// Only services for now.
 		if hasNamespace(metric.Namespaces, "kubernetes.service") {
-			newDefs[name] = &metric
-			continue
+			newDefs[name] = metric
 		}
 	}
 	newMetrics := make([]_cma_provider.CustomMetricInfo, 0, len(newDefs))

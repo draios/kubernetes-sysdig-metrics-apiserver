@@ -93,7 +93,7 @@ func (s *DataServiceOp) Get(ctx context.Context, gdr *GetDataRequest) (*GetDataR
 	return data, resp, nil
 }
 
-type Metrics map[string]MetricDefinition
+type Metrics map[string]*MetricDefinition
 
 type MetricDefinition struct {
 	ID          string   `json:"id"`
