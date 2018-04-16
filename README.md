@@ -193,7 +193,7 @@ links above for some of the things I've been using in different ways.
 
 Thanks to Dave Cheney and Joe Beda for being so welcoming with my contributions
 to the Contour project - that was my first experience as a developer in the
-Kubernetes project. The tagging policy and the contributing guide in this
+Kubernetes ecosystem. The tagging policy and the contributing guide in this
 project is based on Contour's.
 
 This project is open source and it uses a [permissive license][license].
