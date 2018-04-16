@@ -61,6 +61,8 @@ func (gdr *GetDataRequest) WithFilter(filter string) *GetDataRequest {
 type GetDataResponse struct {
 	// A list of time samples.
 	Samples []TimeSample `json:"data"`
+	Start   Timestamp    `json:"start"`
+	End     Timestamp    `json:"end"`
 }
 
 type TimeSample struct {
