@@ -90,7 +90,7 @@ func (p *sysdigProvider) getSingle(info _cma_provider.CustomMetricInfo, namespac
 
 	ctx, cancel := context.WithTimeout(context.Background(), sysdigRequestTimeout)
 	defer cancel()
-	req := &sdc.GetDataRequest{Last: 60, Sampling: 60}
+	req := &sdc.GetDataRequest{Last: 10, Sampling: 10}
 	req = req.
 		WithMetric(info.Metric, &sdc.MetricAggregation{Group: "avg", Time: "timeAvg"}).
 		WithFilter(fmt.Sprintf("kubernetes.namespace.name='%s' and kubernetes.service.name='%s'", namespace, name))
