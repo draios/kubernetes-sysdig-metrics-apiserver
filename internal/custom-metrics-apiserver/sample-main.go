@@ -21,7 +21,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/sample-cmd/server"
+	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/sample-cmd/server"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/util/logs"
 )

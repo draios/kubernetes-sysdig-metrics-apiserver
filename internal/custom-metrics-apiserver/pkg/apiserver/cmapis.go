@@ -25,9 +25,9 @@ import (
 	"k8s.io/apiserver/pkg/endpoints/discovery"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 
-	specificapi "github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/apiserver/installer"
-	"github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/provider"
-	metricstorage "github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/registry/custom_metrics"
+	specificapi "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/apiserver/installer"
+	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
+	metricstorage "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/registry/custom_metrics"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
 )
 

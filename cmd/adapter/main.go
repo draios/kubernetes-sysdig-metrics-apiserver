@@ -17,12 +17,12 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/sevein/k8s-sysdig-adapter/internal/cmprovider"
-	"github.com/sevein/k8s-sysdig-adapter/internal/sdc"
+	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/cmprovider"
+	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/sdc"
 
 	// Temporar hack until I can vendor it.
-	_cma_server "github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/cmd/server"
-	_cma_dynamicmapper "github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/dynamicmapper"
+	_cma_server "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/cmd/server"
+	_cma_dynamicmapper "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/dynamicmapper"
 )
 
 // This is the name associated to our CustomMetricsAdapterServer.

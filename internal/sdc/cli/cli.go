@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/sevein/k8s-sysdig-adapter/internal/sdc"
+	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/sdc"
 )
 
 var (

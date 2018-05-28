@@ -1,6 +1,6 @@
 ---
 language: go
-go_import_path: github.com/sevein/k8s-sysdig-adapter
+go_import_path: github.com/draios/kubernetes-sysdig-metrics-apiserver
 go:
   - 1.10.x
 
