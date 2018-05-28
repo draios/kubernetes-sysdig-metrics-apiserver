@@ -43,10 +43,10 @@ import (
 	installem "k8s.io/metrics/pkg/apis/external_metrics/install"
 	emv1beta1 "k8s.io/metrics/pkg/apis/external_metrics/v1beta1"
 
-	"github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/provider"
-	custommetricstorage "github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/registry/custom_metrics"
-	externalmetricstorage "github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/registry/external_metrics"
-	sampleprovider "github.com/sevein/k8s-sysdig-adapter/internal/custom-metrics-apiserver/pkg/sample-cmd/provider"
+	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
+	custommetricstorage "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/registry/custom_metrics"
+	externalmetricstorage "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/registry/external_metrics"
+	sampleprovider "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/sample-cmd/provider"
 	"k8s.io/metrics/pkg/apis/external_metrics"
 )
 

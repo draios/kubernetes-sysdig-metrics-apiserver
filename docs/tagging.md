@@ -7,7 +7,7 @@ This document describes the applications's image tagging policy.
 `sevein/k8s-sysdig-adapter:<SemVer>`
 
 We follow the [Semantic Versioning](http://semver.org/) standard for releases.
-Each tag in the `github.com/sevein/k8s-sysdig-adapter` repository has a
+Each tag in the `github.com/draios/kubernetes-sysdig-metrics-apiserver` repository has a
 matching image, e.g.: `sevein/k8s-sysdig-adapter:v0.1.0`.
 
 ### Latest

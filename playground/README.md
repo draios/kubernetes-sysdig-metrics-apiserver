@@ -86,4 +86,4 @@ You're ready! :tada:
 [4]: ./mixins/bootstrap.sh
 [5]: ./misins/kubeadm.sh
 [6]: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm/
-[7]: https://github.com/sevein/k8s-sysdig-adapter/issues/1
+[7]: https://github.com/draios/kubernetes-sysdig-metrics-apiserver/issues/1

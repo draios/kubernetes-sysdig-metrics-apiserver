@@ -151,7 +151,7 @@ You can find a playground based on Vagrant virtual machines under the
 this project or for development purposes.
 
 [minikube][minikube] has not been tried yet! See
-[issue #3](https://github.com/sevein/k8s-sysdig-adapter/issues/3) for more
+[issue #3](https://github.com/draios/kubernetes-sysdig-metrics-apiserver/issues/3) for more
 details.
 
 ## Troubleshooting
@@ -208,9 +208,9 @@ This project is open source and it uses a [permissive license][license].
 [1]: https://travis-ci.org/sevein/k8s-sysdig-adapter.svg?branch=master
 [2]: https://travis-ci.org/sevein/k8s-sysdig-adapter
 
-[new-issue]: https://github.com/sevein/k8s-sysdig-adapter/issues/new
-[roadmap]: https://github.com/sevein/k8s-sysdig-adapter/milestones
-[issues]: https://github.com/sevein/k8s-sysdig-adapter/issues
+[new-issue]: https://github.com/draios/kubernetes-sysdig-metrics-apiserver/issues/new
+[roadmap]: https://github.com/draios/kubernetes-sysdig-metrics-apiserver/milestones
+[issues]: https://github.com/draios/kubernetes-sysdig-metrics-apiserver/issues
 [contributing]: /CONTRIBUTING.md
 [code-of-conduct]: /CODE_OF_CONDUCT.md
 [license]: /LICENSE
