@@ -111,7 +111,14 @@ func (o adapterOpts) runCustomMetricsAdapterServer(stopCh <-chan struct{}) error
 	if token == "" {
 		return errors.New("Sysdig Monitor API token not provided - pass it via environment string SDC_TOKEN")
 	}
-	sysdigClient := sdc.NewClient(nil, token)
+	var options []sdc.ClientOpt
+	if ep := os.Getenv("SDC_ENDPOINT"); ep != "" {
+		options = append(options, sdc.SetBaseURL(ep))
+	}
+	sysdigClient, err := sdc.New(nil, token, options...)
+	if err != nil {
+		return err
+	}
 
 	// Kubernetes configuration.
 	config, err := o.Config()
