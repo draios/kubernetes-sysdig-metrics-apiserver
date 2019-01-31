@@ -28,9 +28,9 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/cmd/server"
-	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/dynamicmapper"
-	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/sample-cmd/provider"
+	"github.com/dcberg/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/cmd/server"
+	"github.com/dcberg/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/dynamicmapper"
+	"github.com/dcberg/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/sample-cmd/provider"
 )
 
 // NewCommandStartMaster provides a CLI handler for 'start master' command

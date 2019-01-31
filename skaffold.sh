@@ -24,7 +24,7 @@ AGENT_KEY=${AGENT_KEY:?Need to set AGENT_KEY}
 SDC_TOKEN=${SDC_TOKEN:?Need to set SDC_TOKEN}
 
 # This should be doing incremental builds if you're using Go v1.10.
-env CGO_ENABLED=0 GOOS=linux go build -v -ldflags="-w -s" -o ${BIN}/adapter -v github.com/draios/kubernetes-sysdig-metrics-apiserver/cmd/adapter
+env CGO_ENABLED=0 GOOS=linux go build -v -ldflags="-w -s" -o ${BIN}/adapter -v github.com/dcberg/kubernetes-sysdig-metrics-apiserver/cmd/adapter
 
 # Build image
 docker build -f Dockerfile.skaffold -t ${IMAGE} .

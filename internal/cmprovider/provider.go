@@ -19,9 +19,9 @@ import (
 	"k8s.io/metrics/pkg/apis/custom_metrics"
 
 	// Temporar hack until I can vendor it.
-	_cma_provider "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
+	_cma_provider "github.com/dcberg/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
 
-	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/sdc"
+	"github.com/dcberg/kubernetes-sysdig-metrics-apiserver/internal/sdc"
 )
 
 const (

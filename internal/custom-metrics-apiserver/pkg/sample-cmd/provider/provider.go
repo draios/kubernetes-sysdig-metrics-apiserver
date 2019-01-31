@@ -31,7 +31,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
 
-	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
+	"github.com/dcberg/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
 	"k8s.io/metrics/pkg/apis/external_metrics"
 )
 

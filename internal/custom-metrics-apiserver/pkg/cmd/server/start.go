@@ -21,7 +21,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/apiserver"
+	"github.com/dcberg/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/apiserver"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
 )

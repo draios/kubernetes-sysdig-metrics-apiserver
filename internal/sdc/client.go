@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultBaseURL = "https://app.sysdigcloud.com/api/"
+	defaultBaseURL = "https://us-south.monitoring.cloud.ibm.com/api/"  //"https://app.sysdigcloud.com/api/"
 	userAgent      = "sdc Go library"
 	mediaType      = "application/json"
 )

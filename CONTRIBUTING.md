@@ -31,8 +31,8 @@ repository, does not include a copy of its dependencies. This might change in
 the future, but for now use the following command to fetch the source of the
 application and its dependencies:
 
-    $ go get -d github.com/draios/kubernetes-sysdig-metrics-apiserver
-    $ cd $GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver
+    $ go get -d github.com/dcberg/kubernetes-sysdig-metrics-apiserver
+    $ cd $GOPATH/src/github.com/dcberg/kubernetes-sysdig-metrics-apiserver
     $ dep ensure -vendor-only
 
 Go is very particular when it comes to the location of the source code in your
@@ -45,11 +45,11 @@ substituting your GitHub username where appropriate.
     $ git remote add origin git@github.com:foobar/k8s-sysdig-adapter.git
 
 This ensures that the source code on disk remains at
-`$GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver` while the remote repository
+`$GOPATH/src/github.com/dcberg/kubernetes-sysdig-metrics-apiserver` while the remote repository
 is configured for your fork.
 
 The remainder of this document assumes your terminal's working directory is
-`$GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver`.
+`$GOPATH/src/github.com/dcberg/kubernetes-sysdig-metrics-apiserver`.
 
 ### Building
 
@@ -58,10 +58,10 @@ To build the application, run:
     $ go build ./cmd/adapter
 
 This assumes your working directory is set to
-`$GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver`. If you're somewhere else in
+`$GOPATH/src/github.com/dcberg/kubernetes-sysdig-metrics-apiserver`. If you're somewhere else in
 the file system you can instead run:
 
-    $ go build github.com/draios/kubernetes-sysdig-metrics-apiserver/cmd/adapter
+    $ go build github.com/dcberg/kubernetes-sysdig-metrics-apiserver/cmd/adapter
 
 This produces a `adapter` binary in your current working directory.
 
@@ -77,17 +77,17 @@ project:
     $ go test ./...
 
 This assumes your working directory is set to
-`$GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver`. If you're working from a
+`$GOPATH/src/github.com/dcberg/kubernetes-sysdig-metrics-apiserver`. If you're working from a
 different directory, you can instead run:
 
-    $ go test github.com/draios/kubernetes-sysdig-metrics-apiserver/...
+    $ go test github.com/dcberg/kubernetes-sysdig-metrics-apiserver/...
 
 To run the tests for a single package, change to package directory and run:
 
     $ go test .
 
 _TIP_: If you are running the tests often, you can run
-`go test -i github.com/draios/kubernetes-sysdig-metrics-apiserver/...` occasionally to reduce
+`go test -i github.com/dcberg/kubernetes-sysdig-metrics-apiserver/...` occasionally to reduce
 test compilation times.
 
 ## Contribution workflow
@@ -129,5 +129,5 @@ regards will be added soon.
 [1]: https://golang.org/dl/
 [2]: https://github.com/golang/dep
 [3]: https://golang.org/doc/code.html
-[4]: https://github.com/draios/kubernetes-sysdig-metrics-apiserver/issues
+[4]: https://github.com/dcberg/kubernetes-sysdig-metrics-apiserver/issues
 [5]: docs/tagging.md

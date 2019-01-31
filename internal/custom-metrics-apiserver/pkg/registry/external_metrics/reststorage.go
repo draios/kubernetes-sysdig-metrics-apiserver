@@ -18,7 +18,7 @@ package apiserver
 
 import (
 	"fmt"
-	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
+	"github.com/dcberg/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
