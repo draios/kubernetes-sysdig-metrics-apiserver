@@ -41,7 +41,7 @@ type sysdigProvider struct {
 	MetricsRegistry
 }
 
-func NewSysdigProvider(mapper apimeta.RESTMapper, kubeClient dynamic.ClientPool, sysdigClient *sdc.Client, metric, namespace, service string, stopChan <-chan struct{}) _cma_provider.CustomMetricsProvider {
+func NewSysdigProvider(mapper apimeta.RESTMapper, kubeClient dynamic.ClientPool, sysdigClient *sdc.Client, stopChan <-chan struct{}) _cma_provider.CustomMetricsProvider {
 	lister := &cachingMetricsLister{
 		sysdigClient:    sysdigClient,
 		updateInterval:  updateInterval,

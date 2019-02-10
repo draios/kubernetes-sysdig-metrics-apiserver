@@ -64,8 +64,6 @@ spec:
         imagePullPolicy: Always
         command: ["adapter"]
         args:
-        - "--namespace=default"
-        - "--service=kuard"
         - "--logtostderr=true"
         - "--v=10"
         env:
@@ -74,6 +72,8 @@ spec:
             secretKeyRef:
               name: sysdig-api
               key: access-key
+        - name: SDC_ENDPOINT
+          value: "https://app.sysdigcloud.com/api/"
         ports:
         - containerPort: 443
         securityContext:
