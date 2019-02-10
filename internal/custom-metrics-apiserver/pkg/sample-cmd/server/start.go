@@ -126,11 +126,11 @@ func (o SampleAdapterServerOptions) RunCustomMetricsAdapterServer(stopCh <-chan 
 	}
 
 	// In this example, the same provider implements both Custom Metrics API and External Metrics API
-	server, err := config.Complete().New("sample-custom-metrics-adapter", customMetricsProvider, externalMetricsProvider)
+	adapter, err := config.Complete().New("sample-custom-metrics-adapter", customMetricsProvider, externalMetricsProvider)
 	if err != nil {
 		return err
 	}
-	return server.GenericAPIServer.PrepareRun().Run(stopCh)
+	return adapter.GenericAPIServer.PrepareRun().Run(stopCh)
 }
 
 type SampleAdapterServerOptions struct {

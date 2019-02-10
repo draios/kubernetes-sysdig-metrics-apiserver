@@ -20,9 +20,9 @@ import (
 	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/cmprovider"
 	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/sdc"
 
-	// Temporar hack until I can vendor it.
-	_cma_server "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/cmd/server"
-	_cma_dynamicmapper "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/dynamicmapper"
+	// TODO: Vendor this
+	cmaserver "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/cmd/server"
+	cmadynamicmapper "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/dynamicmapper"
 )
 
 // This is the name associated to our CustomMetricsAdapterServer.
@@ -44,7 +44,7 @@ func main() {
 }
 
 func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
-	baseOpts := _cma_server.NewCustomMetricsAdapterServerOptions(out, errOut)
+	baseOpts := cmaserver.NewCustomMetricsAdapterServerOptions(out, errOut)
 	o := adapterOpts{
 		CustomMetricsAdapterServerOptions: baseOpts,
 		DiscoveryInterval:                 10 * time.Minute,
@@ -79,7 +79,7 @@ func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 }
 
 type adapterOpts struct {
-	*_cma_server.CustomMetricsAdapterServerOptions
+	*cmaserver.CustomMetricsAdapterServerOptions
 
 	// RemoteKubeConfigFile is the config used to list pods from the master API server
 	RemoteKubeConfigFile string
@@ -129,7 +129,7 @@ func (o adapterOpts) runCustomMetricsAdapterServer(stopCh <-chan struct{}) error
 		return fmt.Errorf("unable to construct discovery client for dynamic client: %v", err)
 	}
 
-	dynamicMapper, err := _cma_dynamicmapper.NewRESTMapper(discoveryClient, apimeta.InterfacesForUnstructured, o.DiscoveryInterval)
+	dynamicMapper, err := cmadynamicmapper.NewRESTMapper(discoveryClient, apimeta.InterfacesForUnstructured, o.DiscoveryInterval)
 	if err != nil {
 		return fmt.Errorf("unable to construct dynamic discovery mapper: %v", err)
 	}

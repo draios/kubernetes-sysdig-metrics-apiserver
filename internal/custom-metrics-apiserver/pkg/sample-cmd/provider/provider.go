@@ -136,7 +136,7 @@ func (p *testingProvider) metricFor(value int64, groupResource schema.GroupResou
 			Namespace:  namespace,
 		},
 		MetricName: metricName,
-		Timestamp:  metav1.Time{time.Now()},
+		Timestamp:  metav1.Time{Time: time.Now()},
 		Value:      *resource.NewMilliQuantity(value*100, resource.DecimalSI),
 	}, nil
 }
@@ -265,7 +265,7 @@ func (p *testingProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	}
 }
 func (p *testingProvider) GetExternalMetric(namespace string, metricName string, metricSelector labels.Selector) (*external_metrics.ExternalMetricValueList, error) {
-	matchingMetrics := []external_metrics.ExternalMetricValue{}
+	var matchingMetrics []external_metrics.ExternalMetricValue
 	for _, metric := range p.externalMetrics {
 		if metric.info.Metric == metricName &&
 			metricSelector.Matches(labels.Set(metric.info.Labels)) {
@@ -280,7 +280,7 @@ func (p *testingProvider) GetExternalMetric(namespace string, metricName string,
 }
 
 func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
-	externalMetricsInfo := []provider.ExternalMetricInfo{}
+	var externalMetricsInfo []provider.ExternalMetricInfo
 	for _, metric := range p.externalMetrics {
 		externalMetricsInfo = append(externalMetricsInfo, metric.info)
 	}

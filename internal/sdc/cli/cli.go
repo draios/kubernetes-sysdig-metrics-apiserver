@@ -76,13 +76,13 @@ func newListMetricsCmd(out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "list-metrics",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runListMetrics(out, cmd)
+			return runListMetrics(out)
 		},
 	}
 	return cmd
 }
 
-func runListMetrics(out io.Writer, cmd *cobra.Command) error {
+func runListMetrics(out io.Writer) error {
 	metrics, _, err := client.Data.Metrics(ctx)
 	if err != nil {
 		return err

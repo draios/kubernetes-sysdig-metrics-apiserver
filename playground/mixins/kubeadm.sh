@@ -3,7 +3,7 @@
 set -o pipefail
 set -o errexit
 
-[[ -n $DEBUG ]] && set -x
+[[ -n ${DEBUG} ]] && set -x
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -27,7 +27,7 @@ set_up_controller() {
 create_token() {
     local instance="controller-node"
     local cmd=$(do_ssh "${VM_USER}@${instance}" sudo kubeadm token create --print-join-command)
-    echo $cmd
+    echo ${cmd}
 }
 
 kubeconfig() {

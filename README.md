@@ -67,7 +67,7 @@ the very least, you need to use your own **access key** and **API token** as
 follows:
 
 - [01-sysdig-daemon-set.yml](./deploy/01-sysdig-daemon-set.yml) installs the
-  Sysdig agent - edit it so it uses your own access key.
+  Sysdig agent - edit the `secret` so it uses your own access key.
 - [03-sysdig-metrics-server.yml](./deploy/03-sysdig-metrics-server.yml) installs
   a `secret` in Kubernetes containing the Sysdig Monitor API token - edit it to
   use your own token.
@@ -100,7 +100,7 @@ Now we're ready to start! :tada:
    $ kubectl apply -f deploy/01-sysdig-daemon-set.yml
    ```
 
-   **Don't forget to add your own access key to the file!**
+   **Don't forget to add your own Agent key (not the API token) to the file!**
 
 3. The following command is going to deploy a number of required objects like
    a custom namespace `custom-metrics`, required RBAC roles, permissions,

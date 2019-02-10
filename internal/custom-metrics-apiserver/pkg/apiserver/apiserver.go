@@ -68,12 +68,16 @@ type CustomMetricsAdapterServer struct {
 	externalMetricsProvider provider.ExternalMetricsProvider
 }
 
+type CompletedConfig interface {
+	New(name string, customMetricsProvider provider.CustomMetricsProvider, externalMetricsProvider provider.ExternalMetricsProvider) (*CustomMetricsAdapterServer, error)
+}
+
 type completedConfig struct {
 	genericapiserver.CompletedConfig
 }
 
 // Complete fills in any fields not set that are required to have valid data. It's mutating the receiver.
-func (c *Config) Complete() completedConfig {
+func (c *Config) Complete() CompletedConfig {
 	c.GenericConfig.Version = &version.Info{
 		Major: "1",
 		Minor: "0",

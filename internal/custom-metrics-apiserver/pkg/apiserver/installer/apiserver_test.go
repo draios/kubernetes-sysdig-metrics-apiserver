@@ -406,12 +406,12 @@ func TestExternalMetricsAPI(t *testing.T) {
 }
 
 func executeRequest(t *testing.T, k string, v T, server *httptest.Server, client *http.Client) (*http.Response, error) {
-	request, err := http.NewRequest(v.Method, server.URL+v.Path, nil)
+	req, err := http.NewRequest(v.Method, server.URL+v.Path, nil)
 	if err != nil {
 		t.Fatalf("unexpected error (%s): %v", k, err)
 	}
 
-	response, err := client.Do(request)
+	response, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error (%s): %v", k, err)
 	}
@@ -422,7 +422,7 @@ func executeRequest(t *testing.T, k string, v T, server *httptest.Server, client
 		if err != nil {
 			bodyPart = fmt.Sprintf("[error extracting body: %v]", err)
 		}
-		return nil, fmt.Errorf("Expected %d for %s (%s), Got %#v -- %s", v.Status, v.Method, k, response, bodyPart)
+		return nil, fmt.Errorf("expected %d for %s (%s), got %#v -- %s", v.Status, v.Method, k, response, bodyPart)
 	}
 	return response, nil
 }
