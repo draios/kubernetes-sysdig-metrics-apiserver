@@ -2,19 +2,21 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sysdig-monitor-api-token
+  name: sysdig-api
   namespace: custom-metrics
+  labels:
+    app: custom-metrics
 type: Opaque
 data:
-  # This is not a valid agent key! You should create your own, e.g.:
+  # This is not a valid API key! You should create your own, e.g.:
   #
-  #     $ kubectl delete secret sysdig-monitor-api-token --namespace=custom-metrics
+  #     $ kubectl delete secret sysdig-api --namespace=custom-metrics
   #
-  #     $ kubectl create secret generic sysdig-monitor-api-token \
+  #     $ kubectl create secret generic sysdig-api \
   #           --namespace=custom-metrics \
   #           --from-literal=token=<YOUR OWN KEY>
   #
-  #     $ kubectl get secret sysdig-monitor-api-token -o json
+  #     $ kubectl get secret sysdig-api -o json
   #
   # You could also encode the key from the command-line interface and edit the
   # object manually, e.g.:
@@ -22,11 +24,10 @@ data:
   #   $ echo -n "59493980-bbab-44e5-81b2-d80d59192fcd" | base64
   #   NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
   #
-  #   $ env KUBE_EDITOR=vim kubectl edit secret sysdig-monitor-api-token
+  #   $ env KUBE_EDITOR=vim kubectl edit secret sysdig-api
   #
   # This is not a real token!
-  token: NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
-
+  access-key: NTk0OTM5ODAtYmJhYi00NGU1LTgxYjItZDgwZDU5MTkyZmNk
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
@@ -54,12 +55,12 @@ spec:
         effect: NoSchedule
       serviceAccountName: custom-metrics-apiserver
       volumes:
-      - name: sysdig-monitor-api-token
+      - name: sysdig-api
         secret:
-          secretName: sysdig-monitor-api-token
+          secretName: sysdig-api
       containers:
       - name: custom-metrics-server
-        image: sevein/k8s-sysdig-adapter:latest
+        image: tembleking/hpa
         imagePullPolicy: Always
         command: ["adapter"]
         args:
@@ -71,8 +72,8 @@ spec:
         - name: SDC_TOKEN
           valueFrom:
             secretKeyRef:
-              name: sysdig-monitor-api-token
-              key: token
+              name: sysdig-api
+              key: access-key
         ports:
         - containerPort: 443
         securityContext:

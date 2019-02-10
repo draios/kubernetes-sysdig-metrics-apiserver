@@ -3,14 +3,12 @@ kind: Namespace
 apiVersion: v1
 metadata:
   name: custom-metrics
-
 ---
 kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: custom-metrics-apiserver
   namespace: custom-metrics
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -24,7 +22,6 @@ subjects:
 - kind: ServiceAccount
   name: custom-metrics-apiserver
   namespace: custom-metrics
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -39,7 +36,6 @@ subjects:
 - kind: ServiceAccount
   name: custom-metrics-apiserver
   namespace: custom-metrics
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -69,7 +65,6 @@ subjects:
 - kind: ServiceAccount
   name: custom-metrics-apiserver
   namespace: custom-metrics
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -82,7 +77,6 @@ rules:
   - "*"
   verbs:
   - "*"
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -96,7 +90,6 @@ subjects:
 - kind: ServiceAccount
   name: horizontal-pod-autoscaler
   namespace: kube-system
-
 ---
 apiVersion: v1
 kind: Service
@@ -109,7 +102,6 @@ spec:
     targetPort: 443
   selector:
     app: custom-metrics-apiserver
-
 ---
 apiVersion: apiregistration.k8s.io/v1beta1
 kind: APIService
@@ -124,7 +116,6 @@ spec:
     name: api
     namespace: custom-metrics
   version: v1beta1
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -135,7 +126,6 @@ rules:
   - custom-metrics.metrics.k8s.io
   resources: ["*"]
   verbs: ["*"]
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
