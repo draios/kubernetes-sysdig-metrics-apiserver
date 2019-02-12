@@ -56,7 +56,7 @@ func NewSysdigProvider(mapper apimeta.RESTMapper, kubeClient dynamic.ClientPool,
 	}
 }
 
-func (p *sysdigProvider) metricFor(value float64, ts time.Time, groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
+func (p *sysdigProvider) metricFor(value float64, ts time.Time, groupResource schema.GroupResource, namespace string, serviceName string, metricName string) (*custom_metrics.MetricValue, error) {
 	kind, err := p.mapper.KindFor(groupResource.WithVersion(""))
 	if err != nil {
 		return nil, err
@@ -66,12 +66,12 @@ func (p *sysdigProvider) metricFor(value float64, ts time.Time, groupResource sc
 		version  = groupResource.Group + "/" + runtime.APIVersionInternal
 	)
 	glog.V(10).Infof("Returning value %s for metric %s (version=%s, kind=%s, name=%s, namespace=%s, ts=%s)",
-		quantity.String(), metricName, version, kind.Kind, name, namespace, ts.String())
+		quantity.String(), metricName, version, kind.Kind, serviceName, namespace, ts.String())
 	return &custom_metrics.MetricValue{
 		DescribedObject: custom_metrics.ObjectReference{
 			APIVersion: groupResource.Group + "/" + runtime.APIVersionInternal,
 			Kind:       kind.Kind,
-			Name:       name,
+			Name:       serviceName,
 			Namespace:  namespace,
 		},
 		MetricName: metricName,
@@ -80,7 +80,7 @@ func (p *sysdigProvider) metricFor(value float64, ts time.Time, groupResource sc
 	}, nil
 }
 
-func (p *sysdigProvider) getSingle(info cmaprovider.CustomMetricInfo, namespace, name string) (*custom_metrics.MetricValue, error) {
+func (p *sysdigProvider) getSingle(info cmaprovider.CustomMetricInfo, namespace, serviceName string) (*custom_metrics.MetricValue, error) {
 	if _, ok := p.Metric(info.Metric); !ok {
 		return nil, cmaprovider.NewMetricNotFoundError(info.GroupResource, info.Metric)
 	}
@@ -90,13 +90,13 @@ func (p *sysdigProvider) getSingle(info cmaprovider.CustomMetricInfo, namespace,
 	req := &sdc.GetDataRequest{Last: 10, Sampling: 10}
 	req = req.
 		WithMetric(info.Metric, &sdc.MetricAggregation{Group: "avg", Time: "timeAvg"}).
-		WithFilter(fmt.Sprintf("kubernetes.namespace.name='%s' and kubernetes.service.name='%s'", namespace, name))
+		WithFilter(fmt.Sprintf("kubernetes.namespace.name='%s' and kubernetes.service.name='%s'", namespace, serviceName))
 	payload, _, err := p.sysdigClient.Data.Get(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("sysdig client error: %v", err)
 	}
 	if len(payload.Samples) == 0 {
-		return nil, cmaprovider.NewMetricNotFoundError(info.GroupResource, info.Metric)
+		return p.metricFor(0, time.Now(), info.GroupResource, namespace, serviceName, info.Metric)
 	}
 	val, err := payload.FirstValue()
 	if err != nil {
@@ -106,7 +106,7 @@ func (p *sysdigProvider) getSingle(info cmaprovider.CustomMetricInfo, namespace,
 	if err != nil {
 		return nil, fmt.Errorf("sysdig client returned a value that cannot be parsed as a float: %v", string(val))
 	}
-	return p.metricFor(float, time.Time(payload.Samples[0].Time), info.GroupResource, namespace, name, info.Metric)
+	return p.metricFor(float, time.Time(payload.Samples[0].Time), info.GroupResource, namespace, serviceName, info.Metric)
 }
 
 // GetRootScopedMetricByName fetches a particular metric for a particular root-scoped object.
