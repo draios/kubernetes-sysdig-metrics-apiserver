@@ -1,3 +1,4 @@
 .vagrant/
 bin/
 vendor/
+.idea/
