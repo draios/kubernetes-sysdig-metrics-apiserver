@@ -60,7 +60,7 @@ spec:
           secretName: sysdig-api
       containers:
       - name: custom-metrics-server
-        image: tembleking/hpa
+        image: sysdiglabs/kubernetes-sysdig-metrics-apiserver:0.1.0
         imagePullPolicy: Always
         command: ["adapter"]
         args:
