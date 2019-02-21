@@ -246,10 +246,10 @@ Now we're ready to start! :tada:
      - port: 443
        targetPort: 443
      selector:
-       app: custom-metrics-apiserver
+       app: custom-metrics-apiserver      
    ```
 
-   We have to create as well, the API endpoint: 
+   And finaly, we create the API endpoint: 
 
    ```
    apiVersion: apiregistration.k8s.io/v1beta1
@@ -316,7 +316,6 @@ Now we're ready to start! :tada:
        }
      ]
    }
-
    ```
 
 5. Deploy our custom autoscaler that scales our service based on the
