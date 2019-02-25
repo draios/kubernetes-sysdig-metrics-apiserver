@@ -20,9 +20,9 @@ import (
 	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/cmprovider"
 	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/sdc"
 
-	// Temporar hack until I can vendor it.
-	_cma_server "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/cmd/server"
-	_cma_dynamicmapper "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/dynamicmapper"
+	// TODO: Vendor this
+	cmaserver "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/cmd/server"
+	cmadynamicmapper "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/dynamicmapper"
 )
 
 // This is the name associated to our CustomMetricsAdapterServer.
@@ -44,7 +44,7 @@ func main() {
 }
 
 func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
-	baseOpts := _cma_server.NewCustomMetricsAdapterServerOptions(out, errOut)
+	baseOpts := cmaserver.NewCustomMetricsAdapterServerOptions(out, errOut)
 	o := adapterOpts{
 		CustomMetricsAdapterServerOptions: baseOpts,
 		DiscoveryInterval:                 10 * time.Minute,
@@ -75,33 +75,17 @@ func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 	flags.DurationVar(&o.DiscoveryInterval, "discovery-interval", o.DiscoveryInterval,
 		"interval at which to refresh API discovery information")
 
-	flags.StringVar(&o.Metric, "metric", o.Metric,
-		"metric name as listed in Sysdig Monitor, e.g.: net.http.request.count")
-	flags.StringVar(&o.Namespace, "namespace", o.Namespace,
-		"namespace where the object is found, e.g.: default")
-	flags.StringVar(&o.Service, "service", o.Service,
-		"service object name, e.g.: kuard")
-
 	return cmd
 }
 
 type adapterOpts struct {
-	*_cma_server.CustomMetricsAdapterServerOptions
+	*cmaserver.CustomMetricsAdapterServerOptions
 
 	// RemoteKubeConfigFile is the config used to list pods from the master API server
 	RemoteKubeConfigFile string
 
 	// DiscoveryInterval is the interval at which discovery information is refreshed
 	DiscoveryInterval time.Duration
-
-	// Metric is the name of the Sysdig Monitor metric that this server is using.
-	Metric string
-
-	// Namespace of the service object that this server is using.
-	Namespace string
-
-	// Service is the name of the service object that this server is using.
-	Service string
 }
 
 // runCustomMetricsAdapterServer runs our CustomMetricsAdapterServer.
@@ -145,7 +129,7 @@ func (o adapterOpts) runCustomMetricsAdapterServer(stopCh <-chan struct{}) error
 		return fmt.Errorf("unable to construct discovery client for dynamic client: %v", err)
 	}
 
-	dynamicMapper, err := _cma_dynamicmapper.NewRESTMapper(discoveryClient, apimeta.InterfacesForUnstructured, o.DiscoveryInterval)
+	dynamicMapper, err := cmadynamicmapper.NewRESTMapper(discoveryClient, apimeta.InterfacesForUnstructured, o.DiscoveryInterval)
 	if err != nil {
 		return fmt.Errorf("unable to construct dynamic discovery mapper: %v", err)
 	}
@@ -159,7 +143,7 @@ func (o adapterOpts) runCustomMetricsAdapterServer(stopCh <-chan struct{}) error
 		// Name of the CustomMetricsAdapterServer (for logging purposes).
 		customMetricAdapterName,
 		// CustomMetricsProvider.
-		cmprovider.NewSysdigProvider(dynamicMapper, clientPool, sysdigClient, o.Metric, o.Namespace, o.Service, stopCh),
+		cmprovider.NewSysdigProvider(dynamicMapper, clientPool, sysdigClient, stopCh),
 		// ExternalMetricsProvider (which we're not implementing)
 		nil,
 	)

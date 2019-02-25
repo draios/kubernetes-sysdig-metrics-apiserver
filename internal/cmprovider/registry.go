@@ -6,8 +6,8 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	// Temporar hack until I can vendor it.
-	_cma_provider "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
+	// TODO: Vendor this
+	cmaprovider "github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
 
 	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/sdc"
 )
@@ -15,7 +15,7 @@ import (
 type MetricsRegistry interface {
 	UpdateMetrics(sdc.Metrics)
 	Metric(name string) (metric *sdc.MetricDefinition, found bool)
-	ListAllMetrics() []_cma_provider.CustomMetricInfo
+	ListAllMetrics() []cmaprovider.CustomMetricInfo
 }
 
 type registry struct {
@@ -25,7 +25,7 @@ type registry struct {
 	defs map[string]*sdc.MetricDefinition
 
 	// List metrics that we return to Kubernetes.
-	metrics []_cma_provider.CustomMetricInfo
+	metrics []cmaprovider.CustomMetricInfo
 }
 
 var _ MetricsRegistry = &registry{}
@@ -72,9 +72,9 @@ func (r *registry) UpdateMetrics(m sdc.Metrics) {
 			newDefs[name] = metric
 		}
 	}
-	newMetrics := make([]_cma_provider.CustomMetricInfo, 0, len(newDefs))
+	newMetrics := make([]cmaprovider.CustomMetricInfo, 0, len(newDefs))
 	for name := range newDefs {
-		newMetrics = append(newMetrics, _cma_provider.CustomMetricInfo{
+		newMetrics = append(newMetrics, cmaprovider.CustomMetricInfo{
 			GroupResource: schema.GroupResource{Resource: "services"},
 			Metric:        name,
 			Namespaced:    true,
@@ -97,7 +97,7 @@ func (r *registry) Metric(name string) (*sdc.MetricDefinition, bool) {
 	return metric, true
 }
 
-func (r *registry) ListAllMetrics() []_cma_provider.CustomMetricInfo {
+func (r *registry) ListAllMetrics() []cmaprovider.CustomMetricInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.metrics

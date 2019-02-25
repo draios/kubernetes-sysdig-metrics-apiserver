@@ -16,7 +16,7 @@ Table of contents:
 ## Introduction
 
 `k8s-sysdig-adapter` is an implementation of the
-[Custom Metrics API][custom-metrics-api-types] using
+[Custom Metrics API][custom-metrics-api-types] using the [Official Custom Metrics Adapter Server Framework][l2] and
 [Sysdig Monitor][sysdig-monitor].
 
 If you have a Kubernetes cluster and you are a Sysdig user, this adapter
@@ -56,8 +56,15 @@ You're going to need:
 
 - **Kubernetes 1.8+**
 - **Sysdig Monitor** - see the [installation instructions][sysdig-monitor-docs-installation].
-- **Sysdig Monitor Access Key** - which you've used during the installation of Sysdig Monitor.
 - **Sysdig Monitor API Token** - see where to find it in [these instructions][sysdig-monitor-docs-api]. Do not confuse the **API token** with the **agent access key**, they're not the same! This is the API token that our metrics server is going to use when accessing the API.
+
+If you are using a K8s which version is between *>=1.8.0 and <1.11.0* you need to enable the flag `--horizontal-pod-autoscaler-use-rest-clients=true` in the kube-controller-manager. To check if you have this flag enabled in the controller-manager, you can execute this command:  
+
+```
+kubectl get pods `kubectl get pods -n kube-system | grep kube-controller-manager | grep Running | cut -d' ' -f 1` -n kube-system -o yaml
+``` 
+
+If your version is >=1.11.0, you don't need to enable this flag, as it's enabled by default. **Warning**: Setting this flag to false enables Heapster-based autoscaling, which is deprecated.
 
 ## Installation
 
@@ -66,9 +73,7 @@ are just for reference. Every deployment is unique so tweak them as needed. At
 the very least, you need to use your own **access key** and **API token** as
 follows:
 
-- [01-sysdig-daemon-set.yml](./deploy/01-sysdig-daemon-set.yml) installs the
-  Sysdig agent - edit it so it uses your own access key.
-- [03-sysdig-metrics-server.yml](./deploy/03-sysdig-metrics-server.yml) installs
+- [02-sysdig-metrics-server.yml](./deploy/02-sysdig-metrics-server.yml) installs
   a `secret` in Kubernetes containing the Sysdig Monitor API token - edit it to
   use your own token.
 
@@ -93,30 +98,186 @@ Now we're ready to start! :tada:
     ```
 
 2. Install Sysdig Monitor if you haven't done it yet - they have
-   [great docs][sysdig-monitor-docs-installation] that you can use. In this
-   example, we're going to install it using a `DaemonSet` object as follows:
+   [great docs][sysdig-monitor-docs-installation] that you can use.
 
-   ```
-   $ kubectl apply -f deploy/01-sysdig-daemon-set.yml
-   ```
-
-   **Don't forget to add your own access key to the file!**
-
+   
 3. The following command is going to deploy a number of required objects like
    a custom namespace `custom-metrics`, required RBAC roles, permissions,
    bindings and the service object for our metrics server:
 
    ```
-   $ kubectl apply -f deploy/02-sysdig-metrics-rbac.yml
+   $ kubectl apply -f deploy/01-sysdig-metrics-rbac.yml
    ```
 
-4. Deploy the metrics server with:
+   Which contains the following: 
+   
+   This creates the namespace that will contain the metrics server
+   ```
+   kind: Namespace
+   apiVersion: v1
+   metadata:
+     name: custom-metrics
+   ```
+
+   This will create the ServiceAccount for the metrics server. ServiceAccounts are a way to authenticate processes which run in pods.
 
    ```
-   $ kubectl apply -f deploy/03-sysdig-metrics-server.yml
+   kind: ServiceAccount
+   apiVersion: v1
+   metadata:
+     name: custom-metrics-apiserver
+     namespace: custom-metrics
    ```
 
-   **Don't forget to add your own API token to the file!**
+   We need to create a ClusterRoleBinding that will bind the ClusterRole `system:auth-delegator` with the ServiceAccount `custom-metrics-api-server` we created to delegate auth decisions to the Kubernetes core API server.
+
+   ```
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRoleBinding
+   metadata:
+     name: custom-metrics:system:auth-delegator
+   roleRef:
+     apiGroup: rbac.authorization.k8s.io
+     kind: ClusterRole
+     name: system:auth-delegator
+   subjects:
+   - kind: ServiceAccount
+     name: custom-metrics-apiserver
+     namespace: custom-metrics
+   ```
+
+   This will create a RoleBinding that will bind the Role that will authorize our application to access the `extension-apiserver-authentication` configmap.
+
+   ```
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: RoleBinding
+   metadata:
+     name: custom-metrics-auth-reader
+     namespace: kube-system
+   roleRef:
+     apiGroup: rbac.authorization.k8s.io
+     kind: Role
+     name: extension-apiserver-authentication-reader
+   subjects:
+   - kind: ServiceAccount
+     name: custom-metrics-apiserver
+     namespace: custom-metrics
+   ```
+
+   We will create a new ClusterRole that will have access to retrieve and list the namespaces, pods and services.
+
+   ```
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRole
+   metadata:
+     name: custom-metrics-resource-reader
+   rules:
+   - apiGroups:
+     - ""
+     resources:
+     - namespaces
+     - pods
+     - services
+     verbs:
+     - get
+     - list
+   ```
+
+   And then bind it with the service account we created for our Metrics Server.
+
+   ```
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRoleBinding
+   metadata:
+     name: custom-metrics-apiserver-resource-reader
+   roleRef:
+     apiGroup: rbac.authorization.k8s.io
+     kind: ClusterRole
+     name: custom-metrics-resource-reader
+   subjects:
+   - kind: ServiceAccount
+     name: custom-metrics-apiserver
+     namespace: custom-metrics
+   ```
+
+   Let's create also a cluster role with complete access to the API group `custom.metrics.k8s.io` where we will publish the metrics.
+
+   ```
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRole
+   metadata:
+     name: custom-metrics-getter
+   rules:
+   - apiGroups:
+     - custom.metrics.k8s.io
+     resources:
+     - "*"
+     verbs:
+     - "*"
+   ```
+
+   And bind it to the HPA so it can retrieve the metrics.
+
+   ```
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRoleBinding
+   metadata:
+     name: hpa-custom-metrics-getter
+   roleRef:
+     apiGroup: rbac.authorization.k8s.io
+     kind: ClusterRole
+     name: custom-metrics-getter
+   subjects:
+   - kind: ServiceAccount
+     name: horizontal-pod-autoscaler
+     namespace: kube-system
+   ```
+
+   We have to create the Service to publish the metrics: 
+
+   ```
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: api
+     namespace: custom-metrics
+   spec:
+     ports:
+     - port: 443
+       targetPort: 443
+     selector:
+       app: custom-metrics-apiserver      
+   ```
+
+   And finaly, we create the API endpoint: 
+
+   ```
+   apiVersion: apiregistration.k8s.io/v1beta1
+   kind: APIService
+   metadata:
+     name: v1beta1.custom.metrics.k8s.io
+   spec:
+     insecureSkipTLSVerify: true
+     group: custom.metrics.k8s.io
+     groupPriorityMinimum: 1000
+     versionPriority: 5
+     service:
+       name: api
+       namespace: custom-metrics
+     version: v1beta1
+   ```
+
+4. We are going to deploy the metrics server, but first you need to create the secret with your API key:
+
+   ```
+   kubectl create secret generic --from-literal access-key=<YOUR_API_KEY> -n custom-metrics sysdig-api
+   ```
+    
+   Now create the deployment with:
+
+   ```
+   $ kubectl apply -f deploy/02-sysdig-metrics-server.yml
+   ```
 
    It should be possible to retrieve the full list of metrics available using
    the following command:
@@ -125,11 +286,43 @@ Now we're ready to start! :tada:
    $ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq -r ".resources[].name"
    ```
 
+   If you want to know the value of a metric, execute: 
+
+   ```
+   $ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/<NAMESPACE_NAME>/services/<SERVICE_NAME>/<METRIC_NAME>" | jq .
+   ```
+
+   For example:
+
+   ```
+   $ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/services/kuard/net.http.request.count" | jq .
+   {
+     "kind": "MetricValueList",
+     "apiVersion": "custom.metrics.k8s.io/v1beta1",
+     "metadata": {
+       "selfLink": "/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/services/kuard/net.http.request.count"
+     },
+     "items": [
+       {
+         "describedObject": {
+           "kind": "Service",
+           "namespace": "default",
+           "name": "kuard",
+           "apiVersion": "/__internal"
+         },
+         "metricName": "net.http.request.count",
+         "timestamp": "2019-02-20T21:53:22Z",
+         "value": "0"
+       }
+     ]
+   }
+   ```
+
 5. Deploy our custom autoscaler that scales our service based on the
    `net.http.request.count` metric.
 
    ```
-   $ kubectl apply -f deploy/04-kuard-hpa.yml
+   $ kubectl apply -f deploy/03-kuard-hpa.yml
    ```
 
 At this point you should be able to see the autoscaler in action. In the
@@ -217,7 +410,7 @@ This project is open source and it uses a [permissive license][license].
 [kuard]: https://github.com/kubernetes-up-and-running/kuard
 [custom-metrics-api-types]: https://github.com/kubernetes/metrics/tree/master/pkg/apis/custom_metrics
 [sysdig-monitor]: https://sysdig.com/product/monitor/
-[sysdig-monitor-docs-installation]: https://support.sysdig.com/hc/en-us/articles/206770633-Sysdig-Install-Kubernetes-
+[sysdig-monitor-docs-installation]: https://sysdigdocs.atlassian.net/wiki/spaces/Platform/pages/190775522/Agent+Installation
 [sysdig-monitor-docs-api]: https://support.sysdig.com/hc/en-us/articles/205233166
 [minikube]: https://github.com/kubernetes/minikube
 [hey]: https://github.com/rakyll/hey
