@@ -337,16 +337,6 @@ Finally, use the following command to watch the autoscaler:
     NAME               REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
     kuard-autoscaler   Deployment/kuard   105763m/100   3         10        8          2d
 
-## Playground
-
-You can find a playground based on Vagrant virtual machines under the
-[playground](./playground) directory in this repository. You can use it to demo
-this project or for development purposes.
-
-[minikube][minikube] has not been tried yet! See
-[issue #3](https://github.com/draios/kubernetes-sysdig-metrics-apiserver/issues/3) for more
-details.
-
 ## Troubleshooting
 
 If you encounter any problems that the documentation does not address,

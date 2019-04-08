@@ -10,46 +10,12 @@ This section describes how to build the application from source.
 
 ### Prerequisites
 
-1. *Install Go*
-
-    This application requires [Go 1.9][1] or later.
-    We also assume that you're familiar with Go's [`GOPATH` workspace][3]
-    convention, and have the appropriate environment variables set.
-
-2. *Install `dep`*
-
-    We use [`dep`][2] for dependency management. `dep` is a fast moving
-    project so even if you have installed it previously, it's a good idea to
-    update to the latest version using the `go get -u` flag.
-
-        $ go get -u github.com/golang/dep/cmd/dep
+This application requires [Go 1.11][1] or later.
 
 ### Fetch the source
 
-We use [`dep`][2] for dependency management, but to reduce the size of the
-repository, does not include a copy of its dependencies. This might change in
-the future, but for now use the following command to fetch the source of the
-application and its dependencies:
-
-    $ go get -d github.com/draios/kubernetes-sysdig-metrics-apiserver
-    $ cd $GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver
-    $ dep ensure -vendor-only
-
-Go is very particular when it comes to the location of the source code in your
-`$GOPATH`. The easiest way to make the `go` tool happy is to rename the
-appliations 's remote location to something else, and substitute your fork for
-`origin`. For example, to set `origin` to your fork, run this command
-substituting your GitHub username where appropriate.
-
-    $ git remote rename origin upstream
-    $ git remote add origin git@github.com:foobar/k8s-sysdig-adapter.git
-
-This ensures that the source code on disk remains at
-`$GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver` while the remote repository
-is configured for your fork.
-
-The remainder of this document assumes your terminal's working directory is
-`$GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver`.
+With the implementation of the new [Go Module system][2], there's no need to use the `GOPATH`,
+the source code can be stored in any path.
 
 ### Building
 
@@ -57,13 +23,8 @@ To build the application, run:
 
     $ go build ./cmd/adapter
 
-This assumes your working directory is set to
-`$GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver`. If you're somewhere else in
-the file system you can instead run:
-
-    $ go build github.com/draios/kubernetes-sysdig-metrics-apiserver/cmd/adapter
-
-This produces a `adapter` binary in your current working directory.
+Go will download the required dependencies to compile the source code and generate
+a binary called `adapter` in your current working directory.
 
 _TIP_: You may prefer to use `go install` rather than `go build` to cache build
 artifacts and reduce future compile times. In this case the binary is placed in
@@ -76,19 +37,13 @@ project:
 
     $ go test ./...
 
-This assumes your working directory is set to
-`$GOPATH/src/github.com/draios/kubernetes-sysdig-metrics-apiserver`. If you're working from a
-different directory, you can instead run:
-
-    $ go test github.com/draios/kubernetes-sysdig-metrics-apiserver/...
-
 To run the tests for a single package, change to package directory and run:
 
     $ go test .
 
-_TIP_: If you are running the tests often, you can run
-`go test -i github.com/draios/kubernetes-sysdig-metrics-apiserver/...` occasionally to reduce
-test compilation times.
+_TIP_: It is recommended to run the tests with the [Go Race Detector][3] enabled.
+You can enable it with `-race`, for example `go test -race ./...` will run the tests
+in the whole project and will check for race conditions.
 
 ## Contribution workflow
 
@@ -109,9 +64,7 @@ Before a change is submitted it should pass all the pre commit CI jobs.
 If there are unrelated test failures the change can be merged so long as a
 reference to an issue that tracks the test failures is provided.
 
-Once a change lands in master it will be built and available at this tag:
-`sevein/k8s-sysdig-adapter:master`. You can read more about the available images
-in the [tagging][5] document.
+You can read more about the available images in the [tagging][5] document.
 
 ### Build an image
 
@@ -127,7 +80,7 @@ Deploy the image you've built to verify the change. More instructions on this
 regards will be added soon.
 
 [1]: https://golang.org/dl/
-[2]: https://github.com/golang/dep
-[3]: https://golang.org/doc/code.html
+[2]: https://blog.golang.org/using-go-modules
+[3]: https://blog.golang.org/race-detector
 [4]: https://github.com/draios/kubernetes-sysdig-metrics-apiserver/issues
 [5]: docs/tagging.md

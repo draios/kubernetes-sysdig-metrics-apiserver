@@ -1,4 +1,4 @@
-FROM golang:1.11 as builder
+FROM golang:1.12 as builder
 WORKDIR /go/src/github.com/draios/kubernetes-sysdig-metrics-apiserver
 COPY go.mod go.sum ./
 COPY cmd cmd
