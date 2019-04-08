@@ -33,7 +33,7 @@ spec:
           secretName: sysdig-api
       containers:
       - name: custom-metrics-server
-        image: sysdiglabs/kubernetes-sysdig-metrics-apiserver:0.1.0
+        image: sysdiglabs/kubernetes-sysdig-metrics-apiserver:latest
         imagePullPolicy: Always
         command: ["adapter"]
         args:
