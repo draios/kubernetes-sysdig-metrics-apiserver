@@ -24,35 +24,29 @@ import (
 	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/sdc"
 )
 
-const (
-	// Refresh frequency of Sysdig Monitor API metrics.
-	updateInterval = time.Duration(time.Minute * 30)
-
-	// Deadline for requests to the Sysdig Monitor API.
-	sysdigRequestTimeout = time.Duration(time.Second * 5)
-)
-
 type sysdigProvider struct {
-	mapper       apimeta.RESTMapper
-	kubeClient   dynamic.ClientPool
-	sysdigClient *sdc.Client
-	rateInterval time.Duration
+	mapper               apimeta.RESTMapper
+	kubeClient           dynamic.ClientPool
+	sysdigClient         *sdc.Client
+	sysdigRequestTimeout time.Duration
 
 	MetricsRegistry
 }
 
-func NewSysdigProvider(mapper apimeta.RESTMapper, kubeClient dynamic.ClientPool, sysdigClient *sdc.Client, stopChan <-chan struct{}) cmaprovider.CustomMetricsProvider {
+func NewSysdigProvider(mapper apimeta.RESTMapper, kubeClient dynamic.ClientPool, sysdigClient *sdc.Client, sysdigRequestTimeout time.Duration, updateInterval time.Duration, stopChan <-chan struct{}) cmaprovider.CustomMetricsProvider {
 	lister := &cachingMetricsLister{
-		sysdigClient:    sysdigClient,
-		updateInterval:  updateInterval,
-		MetricsRegistry: &registry{},
+		sysdigClient:         sysdigClient,
+		sysdigRequestTimeout: sysdigRequestTimeout,
+		updateInterval:       updateInterval,
+		MetricsRegistry:      &registry{},
 	}
 	lister.RunUntil(stopChan)
 	return &sysdigProvider{
-		mapper:          mapper,
-		kubeClient:      kubeClient,
-		sysdigClient:    sysdigClient,
-		MetricsRegistry: lister,
+		kubeClient:           kubeClient,
+		mapper:               mapper,
+		sysdigClient:         sysdigClient,
+		sysdigRequestTimeout: sysdigRequestTimeout,
+		MetricsRegistry:      lister,
 	}
 }
 
@@ -85,7 +79,7 @@ func (p *sysdigProvider) getSingle(info cmaprovider.CustomMetricInfo, namespace,
 		return nil, cmaprovider.NewMetricNotFoundError(info.GroupResource, info.Metric)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), sysdigRequestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), p.sysdigRequestTimeout)
 	defer cancel()
 	req := &sdc.GetDataRequest{Last: 10, Sampling: 10}
 	req = req.
@@ -149,8 +143,9 @@ func (p *sysdigProvider) GetNamespacedMetricBySelector(groupResource schema.Grou
 }
 
 type cachingMetricsLister struct {
-	sysdigClient   *sdc.Client
-	updateInterval time.Duration
+	sysdigClient         *sdc.Client
+	sysdigRequestTimeout time.Duration
+	updateInterval       time.Duration
 
 	MetricsRegistry
 }
@@ -168,7 +163,7 @@ func (l *cachingMetricsLister) RunUntil(stopChan <-chan struct{}) {
 }
 
 func (l *cachingMetricsLister) updateMetrics() error {
-	ctx, cancel := context.WithTimeout(context.Background(), sysdigRequestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), l.sysdigRequestTimeout)
 	defer cancel()
 	metrics, _, err := l.sysdigClient.Data.Metrics(ctx)
 	if err != nil {

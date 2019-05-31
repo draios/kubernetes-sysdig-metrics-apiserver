@@ -48,6 +48,8 @@ func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 	o := adapterOpts{
 		CustomMetricsAdapterServerOptions: baseOpts,
 		DiscoveryInterval:                 10 * time.Minute,
+		SysdigRequestTimeout:              5 * time.Second,
+		UpdateInterval:                    30 * time.Minute,
 	}
 
 	cmd := &cobra.Command{
@@ -74,6 +76,8 @@ func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 		"kubeconfig file pointing at the 'core' kubernetes server with enough rights to list any described objets")
 	flags.DurationVar(&o.DiscoveryInterval, "discovery-interval", o.DiscoveryInterval,
 		"interval at which to refresh API discovery information")
+	flags.DurationVar(&o.SysdigRequestTimeout, "sysdig-request-timeout", o.SysdigRequestTimeout, "Deadline for requests to the Sysdig Monitor API")
+	flags.DurationVar(&o.UpdateInterval, "update-interval", o.UpdateInterval, "Refresh frequency of Sysdig Monitor API metrics")
 
 	return cmd
 }
@@ -86,6 +90,12 @@ type adapterOpts struct {
 
 	// DiscoveryInterval is the interval at which discovery information is refreshed
 	DiscoveryInterval time.Duration
+
+	// Deadline for requests to the Sysdig Monitor API
+	SysdigRequestTimeout time.Duration
+
+	// Refresh frequency of Sysdig Monitor API metrics
+	UpdateInterval time.Duration
 }
 
 // runCustomMetricsAdapterServer runs our CustomMetricsAdapterServer.
@@ -143,7 +153,7 @@ func (o adapterOpts) runCustomMetricsAdapterServer(stopCh <-chan struct{}) error
 		// Name of the CustomMetricsAdapterServer (for logging purposes).
 		customMetricAdapterName,
 		// CustomMetricsProvider.
-		cmprovider.NewSysdigProvider(dynamicMapper, clientPool, sysdigClient, stopCh),
+		cmprovider.NewSysdigProvider(dynamicMapper, clientPool, sysdigClient, o.SysdigRequestTimeout, o.UpdateInterval, stopCh),
 		// ExternalMetricsProvider (which we're not implementing)
 		nil,
 	)
