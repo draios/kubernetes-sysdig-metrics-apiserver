@@ -1,5 +1,7 @@
 # Kubernetes Custom Metrics Adapter for Sysdig
 
+> :warning: This project is currently unmaintained. Sysdig Monitor now [exports metrics](https://docs.sysdig.com/en/configure-sysdig-with-grafana.html) in Prometheus format that can be consumed by the [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter/) if you want to create a [Horizontal pod autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
+
 [![Build status][1]][2]
 
 Table of contents:
