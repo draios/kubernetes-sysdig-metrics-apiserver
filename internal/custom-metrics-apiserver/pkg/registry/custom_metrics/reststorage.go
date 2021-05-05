@@ -18,8 +18,8 @@ package apiserver
 
 import (
 	"fmt"
-
 	"github.com/draios/kubernetes-sysdig-metrics-apiserver/internal/custom-metrics-apiserver/pkg/provider"
+	"github.com/golang/glog"
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,6 +28,7 @@ import (
 	genericapirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
+	"strings"
 )
 
 type REST struct {
@@ -71,6 +72,15 @@ func (r *REST) List(ctx genericapirequest.Context, options *metainternalversion.
 			name = nameMatch
 		}
 	}
+	glog.Info("The value of name is %s", name)
+	nameSplit := strings.Split(name,";")
+	workloadType := ""
+	if len(nameSplit) > 1 {
+		workloadType = nameSplit[0]
+		name = nameSplit[1]
+	} else {
+		name = nameSplit[0]
+	}
 
 	namespace := genericapirequest.NamespaceValue(ctx)
 
@@ -97,17 +107,17 @@ func (r *REST) List(ctx genericapirequest.Context, options *metainternalversion.
 	if name == "*" {
 		return r.handleWildcardOp(namespace, groupResource, selector, metricName)
 	} else {
-		return r.handleIndividualOp(namespace, groupResource, name, metricName)
+		return r.handleIndividualOp(namespace, groupResource, name, workloadType, metricName)
 	}
 }
 
-func (r *REST) handleIndividualOp(namespace string, groupResource schema.GroupResource, name string, metricName string) (*custom_metrics.MetricValueList, error) {
+func (r *REST) handleIndividualOp(namespace string, groupResource schema.GroupResource, name string, workloadType string, metricName string) (*custom_metrics.MetricValueList, error) {
 	var err error
 	var singleRes *custom_metrics.MetricValue
 	if namespace == "" {
 		singleRes, err = r.cmProvider.GetRootScopedMetricByName(groupResource, name, metricName)
 	} else {
-		singleRes, err = r.cmProvider.GetNamespacedMetricByName(groupResource, namespace, name, metricName)
+		singleRes, err = r.cmProvider.GetNamespacedMetricByName(groupResource, namespace, name, workloadType, metricName)
 	}
 
 	if err != nil {

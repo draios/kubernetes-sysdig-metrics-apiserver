@@ -14,7 +14,7 @@ import (
 
 type MetricsRegistry interface {
 	UpdateMetrics(sdc.Metrics)
-	Metric(name string) (metric *sdc.MetricDefinition, found bool)
+	Metric(name string) (metric sdc.MetricDefinition, found bool)
 	ListAllMetrics() []cmaprovider.CustomMetricInfo
 }
 
@@ -22,7 +22,7 @@ type registry struct {
 	mu sync.RWMutex
 
 	// Map of metrics indexed by its names, e.g. net.http.request.count.
-	defs map[string]*sdc.MetricDefinition
+	defs map[string]sdc.MetricDefinition
 
 	// List metrics that we return to Kubernetes.
 	metrics []cmaprovider.CustomMetricInfo
@@ -61,21 +61,22 @@ func hasNamespace(namespaces []string, wanted string) bool {
 }
 
 func (r *registry) UpdateMetrics(m sdc.Metrics) {
-	newDefs := make(map[string]*sdc.MetricDefinition)
+	newDefs := make(map[string]sdc.MetricDefinition)
 	for name, metric := range m {
 		// Ignore non-quantifiable metrics.
 		if metric.MetricType != "gauge" && metric.MetricType != "counter" {
 			continue
 		}
 		// Only services for now.
-		if hasNamespace(metric.Namespaces, "kubernetes.service") {
+		if hasNamespace(metric.Namespaces, "kubernetes.deployment") ||
+			hasNamespace(metric.Namespaces, "kubernetes.statefulSet") {
 			newDefs[name] = metric
 		}
 	}
 	newMetrics := make([]cmaprovider.CustomMetricInfo, 0, len(newDefs))
 	for name := range newDefs {
 		newMetrics = append(newMetrics, cmaprovider.CustomMetricInfo{
-			GroupResource: schema.GroupResource{Resource: "services"},
+			GroupResource: schema.GroupResource{Resource: "Workload"},
 			Metric:        name,
 			Namespaced:    true,
 		})
@@ -86,13 +87,13 @@ func (r *registry) UpdateMetrics(m sdc.Metrics) {
 	r.metrics = newMetrics
 }
 
-func (r *registry) Metric(name string) (*sdc.MetricDefinition, bool) {
+func (r *registry) Metric(name string) (sdc.MetricDefinition, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	metric, ok := r.defs[name]
 	if !ok {
 		glog.V(10).Infof("metric %s not registered", name)
-		return nil, false
+		return sdc.MetricDefinition{}, false
 	}
 	return metric, true
 }

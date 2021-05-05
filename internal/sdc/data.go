@@ -95,7 +95,7 @@ func (s *DataServiceOp) Get(ctx context.Context, gdr *GetDataRequest) (*GetDataR
 	return data, resp, nil
 }
 
-type Metrics map[string]*MetricDefinition
+type Metrics map[string]MetricDefinition
 
 type MetricDefinition struct {
 	ID          string   `json:"id"`
@@ -125,16 +125,55 @@ type MetricDefinition struct {
 	MetricType string `json:"metricType"`
 }
 
+type MetricsList struct {
+	Total             int                 `json:"total"`
+	Offset            int                 `json:"offset"`
+	MetricDescriptors []MetricDescriptors `json:"metricDescriptors"`
+}
+
+type MetricDescriptors struct {
+	ID                string        `json:"id"`
+	MetricType        string        `json:"metricType"`
+	Type              string        `json:"type"`
+	Scale             float64       `json:"scale"`
+	Category          string        `json:"category"`
+	Namespaces        []string      `json:"namespaces"`
+	Scopes            []interface{} `json:"scopes"`
+	TimeAggregations  []string      `json:"timeAggregations"`
+	GroupAggregations []string      `json:"groupAggregations"`
+	Identity          bool          `json:"identity"`
+	CanMonitor        bool          `json:"canMonitor"`
+	CanGroupBy        bool          `json:"canGroupBy"`
+	CanFilter         bool          `json:"canFilter"`
+	Heuristic         bool          `json:"heuristic"`
+}
+
 func (s *DataServiceOp) Metrics(ctx context.Context) (Metrics, *Response, error) {
-	path := fmt.Sprintf("%s/metrics", dataBasePath)
+	path := fmt.Sprintf("v2/metrics/descriptors")
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-	metrics := Metrics{}
+	metrics := MetricsList{}
 	resp, err := s.client.Do(ctx, req, &metrics)
 	if err != nil {
 		return nil, resp, err
 	}
-	return metrics, resp, nil
+	metricsOld := Metrics{}
+	for _, m := range metrics.MetricDescriptors{
+		metricDefinition := MetricDefinition{
+			ID:          m.ID,
+			Name:        "",
+			Description: "",
+			CanMonitor:  false,
+			Hidden:      false,
+			GroupBy:     nil,
+			Namespaces:  m.Namespaces,
+			Type:        m.Type,
+			MetricType:  m.MetricType,
+		}
+		metricsOld[m.ID] = metricDefinition
+	}
+
+	return metricsOld, resp, nil
 }

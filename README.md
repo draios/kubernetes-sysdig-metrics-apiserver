@@ -6,6 +6,7 @@
 
 Table of contents:
 
+- [New version Upgrade](#new-version-upgrade) 
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -14,6 +15,20 @@ Table of contents:
 - [Contributing](#contributing)
 - [Relevant links](#relevant-links)
 - [Credits and License](#credits-and-license)
+
+## New version upgrade
+This version needs the unified workload labels, workload.name and workload.type to get it to work.
+
+In the last version, the hpa only was asking for the namespace and the service name, in order to check the cluster and the
+The workload we have added two new fields.
+
+In the old hpa definition, the metricName field was for example `net.http.request.count` now in the new version,
+the metric has to be `deployment;net.http.request.count` if the pod you want to scale is a deployment, if you want to scale a
+statefulset then your metric name should be `statefulset;net.http.request.count`
+
+In order to get your cluster name, you have to change your metric server.
+In the new version, you have to add a new environment variable named `CLUSTER_NAME`.
+In the folder `deploy` you will see an example.
 
 ## Introduction
 
@@ -26,7 +41,7 @@ enables you to create [horizontal pod autoscalers][l4] based on metrics provided
 by Sysdig's monitoring solution.
 
 In the following example, we're creating an autoscaler based on the
-`net.http.request.count` metric. The autoscaler will adjust the number of pods
+`net.http.request.count` metric and for a `deployment` workload. The autoscaler will adjust the number of pods
 deployed for our service as the metric fluctuates over or below the threshold
 (`targetValue`).
 
@@ -48,7 +63,7 @@ spec:
       target:
         kind: Service
         name: kuard
-      metricName: net.http.request.count
+      metricName: deployment;net.http.request.count
       targetValue: 100
 ```
 
