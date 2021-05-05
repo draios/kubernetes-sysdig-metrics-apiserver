@@ -17,16 +17,14 @@ Table of contents:
 - [Credits and License](#credits-and-license)
 
 ## New version upgrade
-This version needs the unified workload labels, workload.name and workload.type to get it to work.
+This version needs the unified workload labels, workload.name and workload.type to make it work.
 
-In the last version, the hpa only was asking for the namespace and the service name, in order to check the cluster and the
-The workload we have added two new fields.
+In the last version, the hpa only was asking for the namespace and the service name, in order to check the cluster and the workload we have added two new fields.
 
-In the old hpa definition, the metricName field was for example `net.http.request.count` now in the new version,
-the metric has to be `deployment;net.http.request.count` if the pod you want to scale is a deployment, if you want to scale a
-statefulset then your metric name should be `statefulset;net.http.request.count`
+In the old hpa definition, the target name field was for example `name: kuard` now in the new version,
+the target has to be `name: deployment;kuard` if the pod you want to scale is a deployment, if you want to scale a statefulset then your target name should be `statefulset;kuard`
 
-In order to get your cluster name, you have to change your metric server.
+In order to get your cluster name, you have to change your metric apiserver.
 In the new version, you have to add a new environment variable named `CLUSTER_NAME`.
 In the folder `deploy` you will see an example.
 
