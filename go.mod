@@ -1,5 +1,7 @@
 module github.com/draios/kubernetes-sysdig-metrics-apiserver
 
+go 1.16
+
 require (
 	bitbucket.org/ww/goautoneg v0.0.0-20120707110453-75cd24fc2f2c
 	github.com/NYTimes/gziphandler v1.0.1
@@ -61,3 +63,5 @@ require (
 	k8s.io/kube-openapi v0.0.0-20180410221256-abc8da71b985
 	k8s.io/metrics v0.0.0-20180315102515-489eb24346a9
 )
+
+replace bitbucket.org/ww/goautoneg v0.0.0-20120707110453-75cd24fc2f2c => github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822

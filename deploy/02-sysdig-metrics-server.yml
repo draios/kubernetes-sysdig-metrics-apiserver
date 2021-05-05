@@ -2,7 +2,7 @@
 # kubectl create secret generic --from-literal access-key=<YOUR_SYSDIG_API_TOKEN> -n custom-metrics sysdig-api
 
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: custom-metrics-apiserver
@@ -33,7 +33,7 @@ spec:
           secretName: sysdig-api
       containers:
       - name: custom-metrics-server
-        image: sysdiglabs/kubernetes-sysdig-metrics-apiserver:latest
+        image: gcr.io/mateo-burillo-ns/kubernetes-sysdig-metrics-apiserver:test
         imagePullPolicy: Always
         command: ["adapter"]
         args:
@@ -47,6 +47,8 @@ spec:
               key: access-key
         - name: SDC_ENDPOINT
           value: "https://app.sysdigcloud.com/api/"
+        - name: CLUSTER_NAME
+          value: "YourClusterName"
         ports:
         - containerPort: 443
         securityContext:

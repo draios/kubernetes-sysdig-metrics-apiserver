@@ -109,6 +109,11 @@ func (o adapterOpts) runCustomMetricsAdapterServer(stopCh <-chan struct{}) error
 	if ep := os.Getenv("SDC_ENDPOINT"); ep != "" {
 		options = append(options, sdc.SetBaseURL(ep))
 	}
+	cluster := os.Getenv("CLUSTER_NAME")
+	if cluster == "" {
+		return errors.New("Cluster name not provided - pass it via environment string CLUSTER_NAME")
+	}
+	cmprovider.SetCluster(cluster)
 	sysdigClient, err := sdc.New(nil, token, options...)
 	if err != nil {
 		return err

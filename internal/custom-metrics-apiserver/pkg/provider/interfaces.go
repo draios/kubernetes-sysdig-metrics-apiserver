@@ -32,6 +32,7 @@ type CustomMetricInfo struct {
 	GroupResource schema.GroupResource
 	Namespaced    bool
 	Metric        string
+	Cluster       string
 }
 
 // ExternalMetricInfo describes a metric.
@@ -90,7 +91,7 @@ type CustomMetricsProvider interface {
 	GetRootScopedMetricBySelector(groupResource schema.GroupResource, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error)
 
 	// GetNamespacedMetricByName fetches a particular metric for a particular namespaced object.
-	GetNamespacedMetricByName(groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error)
+	GetNamespacedMetricByName(groupResource schema.GroupResource, namespace string, name string, workloadType string, metricName string) (*custom_metrics.MetricValue, error)
 
 	// GetNamespacedMetricByName fetches a particular metric for a set of namespaced objects
 	// matching the given label selector.
