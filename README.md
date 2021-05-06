@@ -3,28 +3,17 @@
 [![Build status][1]][2]
 
 Table of contents:
+ 
+- [Kubernetes Custom Metrics Adapter for Sysdig](#kubernetes-custom-metrics-adapter-for-sysdig)
+  - [Introduction](#introduction)
+  - [Changes in the new version](#changes-in-the-new-version)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Troubleshooting](#troubleshooting)
+  - [Contributing](#contributing)
+  - [Relevant links](#relevant-links)
+  - [Credits and license](#credits-and-license)
 
-- [New version Upgrade](#new-version-upgrade) 
-- [Introduction](#introduction)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Playground](#playground)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [Relevant links](#relevant-links)
-- [Credits and License](#credits-and-license)
-
-## New version upgrade
-This version needs the unified workload labels, workload.name and workload.type to make it work.
-
-In the last version, the hpa only was asking for the namespace and the service name, in order to check the cluster and the workload we have added two new fields.
-
-In the old hpa definition, the target name field was for example `name: kuard` now in the new version,
-the target has to be `name: deployment;kuard` if the pod you want to scale is a deployment, if you want to scale a statefulset then your target name should be `statefulset;kuard`
-
-In order to get your cluster name, you have to change your metric apiserver.
-In the new version, you have to add a new environment variable named `CLUSTER_NAME`.
-In the folder `deploy` you will see an example.
 
 ## Introduction
 
@@ -58,10 +47,25 @@ spec:
     object:
       target:
         kind: Service
-        name: kuard
-      metricName: deployment;net.http.request.count
+        name: deployment;kuard
+      metricName: net.http.request.count
       targetValue: 100
 ```
+
+## Changes in the new version
+This version needs the unified workload labels (`kubernetes.workload.name` and `kubernetes.workload.type`) in your Sysdig Monitor Platform.
+
+* In the previous version, the HPA was only asking for the namespace and the service name. We have added two new fields in order to check the cluster and the workload.
+
+* In the previous HPA definition, the target name field had this format: `name: kuard`. In the new version, the target has different format depending on the kind of workload that you want to scale:
+  *  deployment: `name: deployment;kuard` 
+  *  statefulset: `name: statefulset;kuard`
+
+* In order to get your cluster name, you have to change your metric API server.
+* You have to add a new environment variable named `CLUSTER_NAME` that has to be the same as the name of your cluster in Sysdig Monitor.
+
+In the folder `deploy` you can find an example.
+
 
 ## Prerequisites
 
