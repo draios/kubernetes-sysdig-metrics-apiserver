@@ -3,7 +3,7 @@
 [![Build status][1]][2]
 
 Table of contents:
- 
+
 - [Kubernetes Custom Metrics Adapter for Sysdig](#kubernetes-custom-metrics-adapter-for-sysdig)
   - [Introduction](#introduction)
   - [Changes in the new version](#changes-in-the-new-version)
@@ -23,9 +23,9 @@ Table of contents:
 
 If you have a Kubernetes cluster and you are a Sysdig user, this adapter
 enables you to create [horizontal pod autoscalers][l4] based on metrics provided
-by Sysdig's monitoring solution.
+by Sysdig monitoring solution.
 
-In the following example, we're creating an autoscaler based on the
+In the following example, you are creating an autoscaler based on the
 `net.http.request.count` metric and for a `deployment` workload. The autoscaler will adjust the number of pods
 deployed for our service as the metric fluctuates over or below the threshold
 (`targetValue`).
@@ -53,58 +53,54 @@ spec:
 ```
 
 ## Changes in the new version
-This version needs the unified workload labels (`kubernetes.workload.name` and `kubernetes.workload.type`) in your Sysdig Monitor Platform.
 
-* In the previous version, the HPA was only asking for the namespace and the service name. We have added two new fields in order to check the cluster and the workload.
+* This version requires the unified workload labels, `kubernetes.workload.name` and `kubernetes.workload.type` in your Sysdig Monitor Platform. These two workload labels have been introduced in Sysdig Monitor to check the cluster and the workload. In the previous version, the HPA was only asking for the namespace and the service name.
 
 * In the previous HPA definition, the target name field had this format: `name: kuard`. In the new version, the target has different format depending on the kind of workload that you want to scale:
-  *  deployment: `name: deployment;kuard` 
+  *  deployment: `name: deployment;kuard`
   *  statefulset: `name: statefulset;kuard`
 
-* In order to get your cluster name, you have to change your metric API server.
-* You have to add a new environment variable named `CLUSTER_NAME` that has to be the same as the name of your cluster in Sysdig Monitor.
+* To retrieve your cluster name, change your metric API server.
+* You have to add a new environment variable named `CLUSTER_NAME` whose value is set to the name of your cluster in Sysdig Monitor.
 
-In the folder `deploy` you can find an example.
+See the example given in the `deploy` directory.
 
 
 ## Prerequisites
 
-You're going to need:
+You need the following:
 
 - **Kubernetes 1.8+**
 - **Sysdig Monitor** - see the [installation instructions][sysdig-monitor-docs-installation].
-- **Sysdig Monitor API Token** - see where to find it in [these instructions][sysdig-monitor-docs-api]. Do not confuse the **API token** with the **agent access key**, they're not the same! This is the API token that our metrics server is going to use when accessing the API.
+- **Sysdig Monitor API Token** - For more information, see [Sydig Monitor API Documentation][sysdig-monitor-docs-api]. Do not confuse the **API token** with the **agent access key**. They are not the same. API token is used by the Sysdig metrics server while accessing the API.
 
-If you are using a K8s which version is between *>=1.8.0 and <1.11.0* you need to enable the flag `--horizontal-pod-autoscaler-use-rest-clients=true` in the kube-controller-manager. To check if you have this flag enabled in the controller-manager, you can execute this command:  
+If you are using a Kubernetes whose version is between *>=1.8.0 and <1.11.0* you need to enable the `--horizontal-pod-autoscaler-use-rest-clients=true` flag in the `kube-controller-manager`. To check if you have this flag enabled in the `kube-controller-manager`, run this command:  
 
 ```
 kubectl get pods `kubectl get pods -n kube-system | grep kube-controller-manager | grep Running | cut -d' ' -f 1` -n kube-system -o yaml
-``` 
+```
 
-If your version is >=1.11.0, you don't need to enable this flag, as it's enabled by default. **Warning**: Setting this flag to false enables Heapster-based autoscaling, which is deprecated.
+If the version you are using is >=1.11.0, you don't need to enable this flag, as it's enabled by default.
+**Warning**: Setting the `--horizontal-pod-autoscaler-use-rest-clients=true` flag to `false` enables Heapster-based autoscaling, which is deprecated.
 
 ## Installation
 
 The configuration files that you can find under the [deploy](./deploy) directory
 are just for reference. Every deployment is unique so tweak them as needed. At
-the very least, you need to use your own **access key** and **API token** as
-follows:
+the very least, you need to use your own **access key** and **API token**.
 
-- [02-sysdig-metrics-server.yml](./deploy/02-sysdig-metrics-server.yml) installs
-  a `secret` in Kubernetes containing the Sysdig Monitor API token - edit it to
-  use your own token.
+In this example, you will deploy [kuard][kuard], a demo application found in the "Kubernetes Up and Running" book.
 
-Now we're ready to start! :tada:
+1. [02-sysdig-metrics-server.yml](./deploy/02-sysdig-metrics-server.yml) installs a `secret` in Kubernetes containing the Sysdig Monitor API token. Edit it to use your own token.
 
-1. For the purpose of this example we're going to deploy [kuard][kuard], a demo
-   application found in the "Kubernetes Up and Running" book. This application
-   is deployed with three replicas by default.
+
+2. Deploy [kuard][kuard]. This application is deployed with three replicas by default.
 
    ```
    $ kubectl apply -f deploy/00-kuard.yml
    ```
 
-   Let's check that it's running:
+3. Check if the replicas are running:
 
    ```
     $ kubectl get pods -l app=kuard -o wide
@@ -114,21 +110,20 @@ Now we're ready to start! :tada:
     kuard-bcc7bf7df-zg8nc   1/1       Running   0          1m        10.46.0.3   worker-node-2
     ```
 
-2. Install Sysdig Monitor if you haven't done it yet - they have
-   [great docs][sysdig-monitor-docs-installation] that you can use.
+4. Install Sysdig Monitor if you haven't done it yet. For more information, see [Installing Sysdig Monitor][sysdig-monitor-docs-installation].
 
-   
-3. The following command is going to deploy a number of required objects like
+
+5. Run the following to deploy a number of required objects like
    a custom namespace `custom-metrics`, required RBAC roles, permissions,
-   bindings and the service object for our metrics server:
+   bindings and the service object for the Sysdig metrics server:
 
    ```
    $ kubectl apply -f deploy/01-sysdig-metrics-rbac.yml
    ```
 
-   Which contains the following: 
-   
-   This creates the namespace that will contain the metrics server
+   It creates the following:
+
+   The namespace that will contain the metrics server
    ```
    kind: Namespace
    apiVersion: v1
@@ -136,7 +131,7 @@ Now we're ready to start! :tada:
      name: custom-metrics
    ```
 
-   This will create the ServiceAccount for the metrics server. ServiceAccounts are a way to authenticate processes which run in pods.
+   The ServiceAccount for the metrics server. ServiceAccounts are a way to authenticate processes which run in pods.
 
    ```
    kind: ServiceAccount
@@ -146,7 +141,7 @@ Now we're ready to start! :tada:
      namespace: custom-metrics
    ```
 
-   We need to create a ClusterRoleBinding that will bind the ClusterRole `system:auth-delegator` with the ServiceAccount `custom-metrics-api-server` we created to delegate auth decisions to the Kubernetes core API server.
+   6. Create a ClusterRoleBinding that will bind the ClusterRole `system:auth-delegator` with the ServiceAccount `custom-metrics-api-server` you created to delegate authentication decisions to the Kubernetes API server.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -163,7 +158,7 @@ Now we're ready to start! :tada:
      namespace: custom-metrics
    ```
 
-   This will create a RoleBinding that will bind the Role that will authorize our application to access the `extension-apiserver-authentication` configmap.
+   7. Create a RoleBinding that will bind the Role that will authorize the application to access the `extension-apiserver-authentication` configmap.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -181,7 +176,7 @@ Now we're ready to start! :tada:
      namespace: custom-metrics
    ```
 
-   We will create a new ClusterRole that will have access to retrieve and list the namespaces, pods and services.
+   8. Create a new ClusterRole that will have access to retrieve and list the namespaces, pods, and services.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -200,7 +195,7 @@ Now we're ready to start! :tada:
      - list
    ```
 
-   And then bind it with the service account we created for our Metrics Server.
+   9. Bind it with the service account you created for the metrics Server.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -217,7 +212,7 @@ Now we're ready to start! :tada:
      namespace: custom-metrics
    ```
 
-   Let's create also a cluster role with complete access to the API group `custom.metrics.k8s.io` where we will publish the metrics.
+   10. Create also a cluster role with complete access to the API group `custom.metrics.k8s.io` where you will publish the metrics.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -233,7 +228,7 @@ Now we're ready to start! :tada:
      - "*"
    ```
 
-   And bind it to the HPA so it can retrieve the metrics.
+   11. Bind it to the HPA so it can retrieve the metrics.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -250,7 +245,7 @@ Now we're ready to start! :tada:
      namespace: kube-system
    ```
 
-   We have to create the Service to publish the metrics: 
+   12. Create the Service to publish the metrics:
 
    ```
    apiVersion: v1
@@ -266,7 +261,7 @@ Now we're ready to start! :tada:
        app: custom-metrics-apiserver      
    ```
 
-   And finaly, we create the API endpoint: 
+   13. Create the API endpoint:
 
    ```
    apiVersion: apiregistration.k8s.io/v1beta1
@@ -284,26 +279,25 @@ Now we're ready to start! :tada:
      version: v1beta1
    ```
 
-4. We are going to deploy the metrics server, but first you need to create the secret with your API key:
+14. Deploy the metrics server, but first you need to create the secret with your API key:
 
    ```
    kubectl create secret generic --from-literal access-key=<YOUR_API_KEY> -n custom-metrics sysdig-api
    ```
-    
-   Now create the deployment with:
+
+15. Create the deployment with:
 
    ```
    $ kubectl apply -f deploy/02-sysdig-metrics-server.yml
    ```
 
-   It should be possible to retrieve the full list of metrics available using
-   the following command:
+   You can retrieve the full list of metrics available by using the following command:
 
    ```
    $ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq -r ".resources[].name"
    ```
 
-   If you want to know the value of a metric, execute: 
+   If you want to know the value of a metric, run:
 
    ```
    $ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/<NAMESPACE_NAME>/services/<SERVICE_NAME>/<METRIC_NAME>" | jq .
@@ -335,7 +329,7 @@ Now we're ready to start! :tada:
    }
    ```
 
-5. Deploy our custom autoscaler that scales our service based on the
+16. Deploy our custom autoscaler that scales the service based on the
    `net.http.request.count` metric.
 
    ```
@@ -343,12 +337,13 @@ Now we're ready to start! :tada:
    ```
 
 At this point you should be able to see the autoscaler in action. In the
-example, we set a threshold of 100 requests per minute. Let's generate some
-traffic with [hey][hey]:
+example, you set a threshold of 100 requests per minute.
+
+17. To generate some traffic with [hey][hey]:
 
     $ hey -c 5 -q 85 -z 24h http://10.103.86.213
 
-Finally, use the following command to watch the autoscaler:
+18. Use the following command to watch the autoscaler:
 
     $ kubectl get hpa kuard-autoscaler -w
     NAME               REFERENCE          TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
@@ -388,7 +383,7 @@ Other links:
 
 ## Credits and license
 
-This project wouldn't be possible without the great job done by others. See the
+This project wouldn't be possible without the great job done by the community. See the
 links above for some of the things I've been using in different ways.
 
 The tagging policy and the contributing guide in this project is based on
