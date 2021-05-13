@@ -55,7 +55,7 @@ spec:
 ```
 
 ## Changes in the new version
-
+Note: these changes are for the version `v0.2`
 * This version requires the unified workload labels, `kubernetes.workload.name` and `kubernetes.workload.type` in your Sysdig Monitor Platform. These two workload labels have been introduced in Sysdig Monitor to check the cluster and the workload. In the previous version, the HPA was only asking for the namespace and the service name.
 
 * In the previous HPA definition, the target name field had this format: `name: kuard`. In the new version, the target has different format depending on the kind of workload that you want to scale:
