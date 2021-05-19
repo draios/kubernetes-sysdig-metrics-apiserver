@@ -32,6 +32,7 @@ type sysdigProvider struct {
 
 	MetricsRegistry
 }
+
 var Cluster = ""
 
 func NewSysdigProvider(mapper apimeta.RESTMapper, kubeClient dynamic.ClientPool, sysdigClient *sdc.Client, sysdigRequestTimeout time.Duration, updateInterval time.Duration, stopChan <-chan struct{}) cmaprovider.CustomMetricsProvider {
@@ -51,7 +52,7 @@ func NewSysdigProvider(mapper apimeta.RESTMapper, kubeClient dynamic.ClientPool,
 	}
 }
 
-func (p *sysdigProvider) metricFor(value float64, ts time.Time, groupResource schema.GroupResource, namespace string, serviceName string, workloadType string,  metricName string) (*custom_metrics.MetricValue, error) {
+func (p *sysdigProvider) metricFor(value float64, ts time.Time, groupResource schema.GroupResource, namespace string, serviceName string, workloadType string, metricName string) (*custom_metrics.MetricValue, error) {
 	kind, err := p.mapper.KindFor(groupResource.WithVersion(""))
 	if err != nil {
 		return nil, err
@@ -83,10 +84,10 @@ func (p *sysdigProvider) getSingle(info cmaprovider.CustomMetricInfo, namespace,
 	ctx, cancel := context.WithTimeout(context.Background(), p.sysdigRequestTimeout)
 	defer cancel()
 	req := &sdc.GetDataRequest{Last: 10, Sampling: 10}
-	clusterFilter:= "kubernetes.cluster.name='" + Cluster + "' and "
+	clusterFilter := "kubernetes.cluster.name='" + Cluster + "' and "
 	filter := clusterFilter + "kubernetes.namespace.name='" + namespace + "' and kubernetes.workload.name='" + serviceName + "' and kubernetes.workload.type='" + workloadType + "'"
 	req = req.
-		WithMetric(info.Metric, &sdc.MetricAggregation{Group: "avg", Time: "timeAvg"}).
+		WithMetric(info.Metric, &sdc.MetricAggregation{Group: "avg", Time: "Avg"}).
 		WithFilter(fmt.Sprintf(filter))
 	payload, _, err := p.sysdigClient.Data.Get(ctx, req)
 	if err != nil {
@@ -113,7 +114,7 @@ func (p *sysdigProvider) GetRootScopedMetricByName(groupResource schema.GroupRes
 		GroupResource: groupResource,
 		Metric:        metricName,
 		Namespaced:    false,
-		Cluster: Cluster,
+		Cluster:       Cluster,
 	}
 	return p.getSingle(info, "", name, "")
 }
@@ -134,7 +135,7 @@ func (p *sysdigProvider) GetNamespacedMetricByName(groupResource schema.GroupRes
 		GroupResource: groupResource,
 		Metric:        metricName,
 		Namespaced:    true,
-		Cluster: Cluster,
+		Cluster:       Cluster,
 	}
 	return p.getSingle(info, namespace, name, workloadType)
 }

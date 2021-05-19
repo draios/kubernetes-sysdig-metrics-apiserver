@@ -24,7 +24,7 @@ type DataServiceOp struct {
 var _ DataService = &DataServiceOp{}
 
 type Metric struct {
-	ID           string            `json:"id"`
+	ID           string            `json:"metric"`
 	Aggregations MetricAggregation `json:"aggregations,omitempty"`
 }
 
@@ -160,7 +160,7 @@ func (s *DataServiceOp) Metrics(ctx context.Context) (Metrics, *Response, error)
 		return nil, resp, err
 	}
 	metricsOld := Metrics{}
-	for _, m := range metrics.MetricDescriptors{
+	for _, m := range metrics.MetricDescriptors {
 		metricDefinition := MetricDefinition{
 			ID:          m.ID,
 			Name:        "",
