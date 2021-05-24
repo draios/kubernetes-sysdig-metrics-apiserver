@@ -1,6 +1,6 @@
 # Kubernetes Custom Metrics Adapter for Sysdig
 
-> :warning: This project is maintained only until September 2021. We encourage you to use [keda](https://keda.sh/)
+> :warning: This project is maintained only until September 2021. Alternatively, we encourage you to use [keda](https://keda.sh/).
 
 [![Build status][1]][2]
 
