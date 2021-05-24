@@ -1,6 +1,6 @@
 # Kubernetes Custom Metrics Adapter for Sysdig
 
-> :warning: This project is currently unmaintained. Sysdig Monitor now [exports metrics](https://docs.sysdig.com/en/configure-sysdig-with-grafana.html) in Prometheus format that can be consumed by the [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter/) if you want to create a [Horizontal pod autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
+> :warning: This project is currently maintained only until September 2021.
 
 [![Build status][1]][2]
 
@@ -8,7 +8,7 @@ Table of contents:
 
 - [Kubernetes Custom Metrics Adapter for Sysdig](#kubernetes-custom-metrics-adapter-for-sysdig)
   - [Introduction](#introduction)
-  - [Changes in the new version](#changes-in-the-new-version)
+  - [Upgrading to v0.2: breaking changes](#upgrading-to-v0.2:-breaking-changes)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Troubleshooting](#troubleshooting)
@@ -54,16 +54,16 @@ spec:
       targetValue: 100
 ```
 
-## Changes in the new version
+## Upgrading to v0.2: breaking changes
 Note: these changes are for the version `v0.2`
-* This version requires the unified workload labels, `kubernetes.workload.name` and `kubernetes.workload.type` in your Sysdig Monitor Platform. These two workload labels have been introduced in Sysdig Monitor to check the cluster and the workload. In the previous version, the HPA was only asking for the namespace and the service name.
+* This version requires the unified workload labels, `kubernetes.workload.name` and `kubernetes.workload.type` in your Sysdig Monitor Platform. These two workload labels have been introduced in Sysdig Monitor to check the type of the workload and the workload name. In the previous version, the HPA was only asking for the namespace and the service name.
 
 * In the previous HPA definition, the target name field had this format: `name: kuard`. In the new version, the target has different format depending on the kind of workload that you want to scale:
   *  deployment: `name: deployment;kuard`
   *  statefulset: `name: statefulset;kuard`
 
-* To retrieve your cluster name, change your metric API server.
-* You have to add a new environment variable named `CLUSTER_NAME` whose value is set to the name of your cluster in Sysdig Monitor.
+* To retrieve your cluster name, change your Custom Metrics API deployment.
+* You have to add a new environment variable named `CLUSTER_NAME` whose value is set to the name of your cluster in Sysdig Monitor. You have to select the same name as it shown in Sysdig.
 
 See the example given in the `deploy` directory.
 
@@ -143,7 +143,7 @@ In this example, you will deploy [kuard][kuard], a demo application found in the
      namespace: custom-metrics
    ```
 
-   6. Create a ClusterRoleBinding that will bind the ClusterRole `system:auth-delegator` with the ServiceAccount `custom-metrics-api-server` you created to delegate authentication decisions to the Kubernetes API server.
+6. Create a ClusterRoleBinding that will bind the ClusterRole `system:auth-delegator` with the ServiceAccount `custom-metrics-api-server` you created to delegate authentication decisions to the Kubernetes API server.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -160,7 +160,7 @@ In this example, you will deploy [kuard][kuard], a demo application found in the
      namespace: custom-metrics
    ```
 
-   7. Create a RoleBinding that will bind the Role that will authorize the application to access the `extension-apiserver-authentication` configmap.
+7. Create a RoleBinding that will bind the Role that will authorize the application to access the `extension-apiserver-authentication` configmap.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -178,7 +178,7 @@ In this example, you will deploy [kuard][kuard], a demo application found in the
      namespace: custom-metrics
    ```
 
-   8. Create a new ClusterRole that will have access to retrieve and list the namespaces, pods, and services.
+8. Create a new ClusterRole that will have access to retrieve and list the namespaces, pods, and services.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -197,7 +197,7 @@ In this example, you will deploy [kuard][kuard], a demo application found in the
      - list
    ```
 
-   9. Bind it with the service account you created for the metrics Server.
+9. Bind it with the service account you created for the metrics Server.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -214,7 +214,7 @@ In this example, you will deploy [kuard][kuard], a demo application found in the
      namespace: custom-metrics
    ```
 
-   10. Create also a cluster role with complete access to the API group `custom.metrics.k8s.io` where you will publish the metrics.
+10. Create also a cluster role with complete access to the API group `custom.metrics.k8s.io` where you will publish the metrics.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -230,7 +230,7 @@ In this example, you will deploy [kuard][kuard], a demo application found in the
      - "*"
    ```
 
-   11. Bind it to the HPA so it can retrieve the metrics.
+11. Bind it to the HPA so it can retrieve the metrics.
 
    ```
    apiVersion: rbac.authorization.k8s.io/v1
@@ -247,7 +247,7 @@ In this example, you will deploy [kuard][kuard], a demo application found in the
      namespace: kube-system
    ```
 
-   12. Create the Service to publish the metrics:
+12. Create the Service to publish the metrics:
 
    ```
    apiVersion: v1
@@ -263,7 +263,7 @@ In this example, you will deploy [kuard][kuard], a demo application found in the
        app: custom-metrics-apiserver      
    ```
 
-   13. Create the API endpoint:
+13. Create the API endpoint:
 
    ```
    apiVersion: apiregistration.k8s.io/v1beta1
