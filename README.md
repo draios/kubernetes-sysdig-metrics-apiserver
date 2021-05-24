@@ -8,7 +8,7 @@ Table of contents:
 
 - [Kubernetes Custom Metrics Adapter for Sysdig](#kubernetes-custom-metrics-adapter-for-sysdig)
   - [Introduction](#introduction)
-  - [Upgrading to v0.2: breaking changes](#upgrading-to-v0.2:-breaking-changes)
+  - [Upgrading to v0.2: breaking changes](#upgrading-to-v0_2---breaking-changes)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Troubleshooting](#troubleshooting)
@@ -54,7 +54,7 @@ spec:
       targetValue: 100
 ```
 
-## Upgrading to v0.2: breaking changes
+## Upgrading to v0_2 - breaking changes
 Note: these changes are for the version `v0.2`
 * This version requires the unified workload labels, `kubernetes.workload.name` and `kubernetes.workload.type` in your Sysdig Monitor Platform. These two workload labels have been introduced in Sysdig Monitor to check the type of the workload and the workload name. In the previous version, the HPA was only asking for the namespace and the service name.
 
