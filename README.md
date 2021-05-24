@@ -1,6 +1,6 @@
 # Kubernetes Custom Metrics Adapter for Sysdig
 
-> :warning: This project is currently maintained only until September 2021.
+> :warning: This project is maintained only until September 2021. We encourage you to use [keda](https://keda.sh/)
 
 [![Build status][1]][2]
 
@@ -8,7 +8,7 @@ Table of contents:
 
 - [Kubernetes Custom Metrics Adapter for Sysdig](#kubernetes-custom-metrics-adapter-for-sysdig)
   - [Introduction](#introduction)
-  - [Upgrading to v0.2: breaking changes](#upgrading-to-v0_2---breaking-changes)
+  - [Breaking Changes in the v2 upgrade](#breaking-changes-in-the-v2-upgrade)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Troubleshooting](#troubleshooting)
@@ -54,16 +54,20 @@ spec:
       targetValue: 100
 ```
 
-## Upgrading to v0_2 - breaking changes
-Note: these changes are for the version `v0.2`
-* This version requires the unified workload labels, `kubernetes.workload.name` and `kubernetes.workload.type` in your Sysdig Monitor Platform. These two workload labels have been introduced in Sysdig Monitor to check the type of the workload and the workload name. In the previous version, the HPA was only asking for the namespace and the service name.
+## Breaking Changes in the v2 upgrade
+Note: The following breaking changes are applicable only for `v0.2`.
+* This version requires the unified workload labels, `kubernetes.workload.name` and `kubernetes.workload.type` in your Sysdig Monitor Platform. These two workload labels have been introduced in Sysdig Monitor to check the type of workload and the workload name. In the previous version, the HPA was only asking for the namespace and the service name.
 
 * In the previous HPA definition, the target name field had this format: `name: kuard`. In the new version, the target has different format depending on the kind of workload that you want to scale:
   *  deployment: `name: deployment;kuard`
   *  statefulset: `name: statefulset;kuard`
 
-* To retrieve your cluster name, change your Custom Metrics API deployment.
-* You have to add a new environment variable named `CLUSTER_NAME` whose value is set to the name of your cluster in Sysdig Monitor. You have to select the same name as it shown in Sysdig.
+* Add your cluster name to your Custom Metrics API deployment as follows:
+```yaml
+- name: CLUSTER_NAME
+  value: "YourClusterName"
+```
+You add a new environment variable named `CLUSTER_NAME`. Set its value to the name of the desired Kubernetes cluster in Sysdig Monitor. Ensure that you use the same name as shown in Sysdig Monitor. You can view the list of Clusters in the **Overview** tab on the Monitor UI. 
 
 See the example given in the `deploy` directory.
 
