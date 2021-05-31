@@ -48,7 +48,7 @@ func command(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 	o := adapterOpts{
 		CustomMetricsAdapterServerOptions: baseOpts,
 		DiscoveryInterval:                 10 * time.Minute,
-		SysdigRequestTimeout:              5 * time.Second,
+		SysdigRequestTimeout:              30 * time.Second,
 		UpdateInterval:                    30 * time.Minute,
 	}
 

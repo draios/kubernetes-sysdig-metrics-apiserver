@@ -149,31 +149,58 @@ type MetricDescriptors struct {
 }
 
 func (s *DataServiceOp) Metrics(ctx context.Context) (Metrics, *Response, error) {
-	path := fmt.Sprintf("v2/metrics/descriptors")
+	initialPath := fmt.Sprintf("v2/metrics/descriptors")
+	limit := 1000
+	offset := 0
+	path := initialPath + "?limit=" + fmt.Sprint(limit) + "&offset=" + fmt.Sprint(offset)
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 	metrics := MetricsList{}
 	resp, err := s.client.Do(ctx, req, &metrics)
-	if err != nil {
-		return nil, resp, err
-	}
+	cont := true
 	metricsOld := Metrics{}
-	for _, m := range metrics.MetricDescriptors {
-		metricDefinition := MetricDefinition{
-			ID:          m.ID,
-			Name:        "",
-			Description: "",
-			CanMonitor:  false,
-			Hidden:      false,
-			GroupBy:     nil,
-			Namespaces:  m.Namespaces,
-			Type:        m.Type,
-			MetricType:  m.MetricType,
+	for cont == true {
+		for _, m := range metrics.MetricDescriptors {
+			metricDefinition := MetricDefinition{
+				ID:          m.ID,
+				Name:        "",
+				Description: "",
+				CanMonitor:  false,
+				Hidden:      false,
+				GroupBy:     nil,
+				Namespaces:  m.Namespaces,
+				Type:        m.Type,
+				MetricType:  m.MetricType,
+			}
+			if hasNamespace(metricDefinition.Namespaces, "kubernetes.cluster") {
+				metricsOld[m.ID] = metricDefinition
+			}
+
 		}
-		metricsOld[m.ID] = metricDefinition
+		if len(metrics.MetricDescriptors) == limit {
+			offset = offset + limit
+		} else {
+			cont = false
+			return metricsOld, resp, nil
+		}
+		path = initialPath + "?limit=" + fmt.Sprint(limit) + "&offset=" + fmt.Sprint(offset)
+		req, err = s.client.NewRequest(ctx, http.MethodGet, path, nil)
+		resp, err = s.client.Do(ctx, req, &metrics)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	return metricsOld, resp, nil
+}
+
+func hasNamespace(namespaces []string, wanted string) bool {
+	for _, item := range namespaces {
+		if item == wanted {
+			return true
+		}
+	}
+	return false
 }
