@@ -150,7 +150,7 @@ type MetricDescriptors struct {
 
 func (s *DataServiceOp) Metrics(ctx context.Context) (Metrics, *Response, error) {
 	initialPath := fmt.Sprintf("v2/metrics/descriptors")
-	limit := 1000
+	limit := 5000
 	offset := 0
 	path := initialPath + "?limit=" + fmt.Sprint(limit) + "&offset=" + fmt.Sprint(offset)
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
@@ -174,10 +174,10 @@ func (s *DataServiceOp) Metrics(ctx context.Context) (Metrics, *Response, error)
 				Type:        m.Type,
 				MetricType:  m.MetricType,
 			}
+			//We only save the metrics with the label kubernetes.cluster
 			if hasNamespace(metricDefinition.Namespaces, "kubernetes.cluster") {
 				metricsOld[m.ID] = metricDefinition
 			}
-
 		}
 		if len(metrics.MetricDescriptors) == limit {
 			offset = offset + limit
